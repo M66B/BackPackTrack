@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	<TableLayout android:layout_width="fill_parent" android:id="@+id/tableLayout1"
+		android:layout_height="wrap_content" android:paddingLeft="5dip">
+		<TableRow android:id="@+id/tableRow11" android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/GpsState" android:id="@+id/lblGpsState"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtGpsState"></TextView>
+		</TableRow>
+		<TableRow android:id="@+id/tableRow12" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/Status" android:id="@+id/lblStatus"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtStatus"></TextView>
+		</TableRow>
+		<TableRow android:id="@+id/tableRow13" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/Satellites" android:id="@+id/lblSatellites"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtSatellites"></TextView>
+		</TableRow>
+		<TableRow android:id="@+id/tableRow14" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/Stage" android:id="@+id/lblStage"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtStage"></TextView>
+		</TableRow>
+		<TableRow android:id="@+id/tableRow15" android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/Latitude" android:id="@+id/lblLatitude"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtLatitude"></TextView>
+		</TableRow>
+		<TableRow android:id="@+id/tableRow16" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/Longitude" android:id="@+id/lblLongitude"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtLongitude"></TextView>
+		</TableRow>
+		<TableRow android:id="@+id/tableRow17" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/Altitude" android:id="@+id/lblAltitude"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtAltitude"></TextView>
+		</TableRow>
+		<TableRow android:id="@+id/tableRow18" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/Speed" android:id="@+id/lblSpeed"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtSpeed"></TextView>
+		</TableRow>
+		<TableRow android:id="@+id/tableRow19" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/Accuracy" android:id="@+id/lblAccuracy"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtAccuracy"></TextView>
+		</TableRow>
+		<TableRow android:id="@+id/tableRow1A" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/Time" android:id="@+id/lblTime"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtTime"></TextView>
+		</TableRow>
+		<TableRow android:id="@+id/tableRow1B" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/TrackName" android:id="@+id/lblTrackName"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtTrackName"></TextView>
+		</TableRow>
+	</TableLayout>
+	<TableLayout android:layout_width="fill_parent" android:id="@+id/tableLayout2"
+		android:layout_height="wrap_content" android:paddingLeft="5dip" android:paddingTop="5dip">
+		<TableRow android:id="@+id/tableRow21" android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+			<Button android:enabled="true" android:text="@string/Start"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:id="@+id/btnStart" android:width="75dip" />
+			<Button android:enabled="false" android:text="@string/Stop"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:id="@+id/btnStop" android:width="75dip" />
+			<Button android:enabled="false" android:text="@string/Update"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:id="@+id/btnUpdate" android:width="75dip" />
+			<ImageView android:src="@drawable/icon"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:id="@+id/iconActivity"></ImageView>
+		</TableRow>
+	</TableLayout>
+</LinearLayout>
