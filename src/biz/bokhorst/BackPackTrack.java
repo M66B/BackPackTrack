@@ -312,8 +312,8 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 			handler.removeCallbacks(LocationWaitTask);
 			iconActivity.setVisibility(View.VISIBLE);
 
-			locationManager.removeUpdates(BackPackTrack.this);
 			locationManager.removeGpsStatusListener(BackPackTrack.this);
+			locationManager.removeUpdates(BackPackTrack.this);
 
 			txtGpsState.setText(getString(R.string.na));
 			txtStatus.setText(getString(R.string.na));
@@ -343,7 +343,7 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 				long wait = Integer.parseInt(preferences.getString(PREF_MAXWAIT, PREF_MAXWAIT_DEFAULT)) * 1000L;
 				handler.postDelayed(LocationWaitTask, wait);
 				Date waitTime = new Date(System.currentTimeMillis() + wait);
-				txtStage.setText(String.format(getString(R.string.StageLocationWait), TIME_FORMATTER.format(waitTime), minAccuracy));
+				txtStage.setText(String.format(getString(R.string.StageTrackWait), TIME_FORMATTER.format(waitTime), minAccuracy));
 			}
 		}
 		showLocation(location);
@@ -376,7 +376,7 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 			stopLocating();
 			showLocation(bestLocation);
 			makeTrackpoint(bestLocation);
-			txtStage.setText(String.format(getString(R.string.StageLocated), TIME_FORMATTER.format(nextTime)));
+			txtStage.setText(String.format(getString(R.string.StageTracked), TIME_FORMATTER.format(nextTime)));
 		}
 	};
 

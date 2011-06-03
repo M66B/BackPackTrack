@@ -43,7 +43,7 @@
 	<string name="Settings">Settings</string>
 	<string name="Nolocation">No location</string>
 	<string name="StageFixWait">Fix wait until %s</string>
-	<string name="StageLocationWait" formatted="false">Location wait until %s %dm</string>
-	<string name="StageFixTimeout">Fix timeout %s</string>
-	<string name="StageLocated">Located, next at %s</string>
+	<string name="StageTrackWait" formatted="false">Tracking until %s %dm</string>
+	<string name="StageFixTimeout">Fix timeout, next %s</string>
+	<string name="StageTracked">Tracked, next %s</string>
 </resources>
