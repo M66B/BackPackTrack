@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +16,10 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.view.Menu;
@@ -30,26 +33,23 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.GpsSatellite;
-import android.location.GpsStatus;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.preference.PreferenceManager;
 
 import org.xmlrpc.android.XMLRPCClient;
 
-public class BackPackTrack extends Activity implements LocationListener, GpsStatus.Listener,
-		SharedPreferences.OnSharedPreferenceChangeListener {
+public class BackPackTrack extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
 	// Preferences
 	private static final String PREF_BLOGURL = "BlogURL";
@@ -63,34 +63,63 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 	private static final String PREF_BLOGPWD_DEFAULT = "";
 
 	private static final String PREF_TRACKNAME = "TrackName";
-	private static final String PREF_TRACKINTERVAL = "TrackInterval";
-	private static final String PREF_FIXTIMEOUT = "FixTimeout";
-	private static final String PREF_MAXWAIT = "MaxWait";
-	private static final String PREF_MINACCURACY = "MinAccuracy";
 	private static final String PREF_GEOCODECOUNT = "GeocodeCount";
 
 	private static final String PREF_TRACKNAME_DEFAULT = "Journey";
-	private static final String PREF_TRACKINTERVAL_DEFAULT = "30";
-	private static final String PREF_FIXTIMEOUT_DEFAULT = "300";
-	private static final String PREF_MAXWAIT_DEFAULT = "60";
-	private static final String PREF_MINACCURACY_DEFAULT = "50";
 	private static final String PREF_GEOCODECOUNT_DEFAULT = "5";
 
-	private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("HH:mm:ss");
 	private static final SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	// Services
-	protected LocationManager locationManager = null;
 	protected ConnectivityManager connectivityManager = null;
+	protected LocationManager locationManager = null;
 	protected DatabaseHelper databaseHelper = null;
 	protected SharedPreferences preferences = null;
 	protected Handler handler = null;
 
+	public static final int MSG_STAGE = 1;
+	public static final int MSG_STATUS = 2;
+	public static final int MSG_SATELLITES = 3;
+	public static final int MSG_LOCATION = 4;
+	public static final int MSG_UPDATETRACK = 5;
+
+	class IncomingHandler extends Handler {
+		@Override
+		public void handleMessage(Message msg) {
+			Bundle b = msg.getData();
+			if (msg.what == MSG_STAGE)
+				txtStage.setText(b.getString("Stage"));
+			else if (msg.what == MSG_STATUS)
+				txtStatus.setText(b.getString("Status"));
+			else if (msg.what == MSG_SATELLITES) {
+				int fix = b.getInt("Fix");
+				int count = b.getInt("Count");
+				if (fix < 0 && count < 0)
+					txtSatellites.setText(R.string.na);
+				else
+					txtSatellites.setText(String.format("%d/%d", fix, count));
+			} else if (msg.what == MSG_LOCATION) {
+				txtLatitude.setText(String.format("%s", Location.convert(b.getDouble("Latitude"),
+						Location.FORMAT_SECONDS)));
+				txtLongitude.setText(String.format("%s", Location.convert(b.getDouble("Longitude"),
+						Location.FORMAT_SECONDS)));
+				txtAltitude.setText(String.format("%dm", Math.round(b.getDouble("Altitude"))));
+				txtSpeed.setText(String.format("%d m/s", Math.round(b.getDouble("Speed"))));
+				txtAccuracy.setText(String.format("%dm", Math.round(b.getDouble("Accuracy"))));
+				txtTime.setText(String.format("%s", DATETIME_FORMATTER.format(new Date(b.getLong("Time")))));
+			} else if (msg.what == MSG_UPDATETRACK)
+				updateTrack();
+		}
+	}
+
+	protected ServiceConnection mConnection = null;
+	protected Messenger mService = null;
+	protected Messenger mClient = new Messenger(new IncomingHandler());
+
 	// User interface
-	protected TextView txtGpsState;
+	protected TextView txtStage;
 	protected TextView txtStatus;
 	protected TextView txtSatellites;
-	protected TextView txtStage;
 
 	protected TextView txtLatitude;
 	protected TextView txtLongitude;
@@ -108,10 +137,6 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 
 	// State
 	private boolean foreground = false;
-	private boolean locating = false;
-	private boolean fixwait = false;
-	private Location bestLocation;
-	private Date nextTime = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -119,18 +144,34 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 		setContentView(R.layout.main);
 
 		// Reference services
-		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		databaseHelper = new DatabaseHelper(this);
 		preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		preferences.registerOnSharedPreferenceChangeListener(this);
 		handler = new Handler();
 
+		mConnection = new ServiceConnection() {
+			public void onServiceConnected(ComponentName className, IBinder service) {
+				mService = new Messenger(service);
+				Message msg = Message.obtain();
+				msg.replyTo = mClient;
+				try {
+					mService.send(msg);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			}
+
+			public void onServiceDisconnected(ComponentName className) {
+				mService = null;
+			}
+		};
+
 		// Reference user interface
-		txtGpsState = (TextView) findViewById(R.id.txtGpsState);
-		txtSatellites = (TextView) findViewById(R.id.txtSatellites);
 		txtStatus = (TextView) findViewById(R.id.txtStatus);
 		txtStage = (TextView) findViewById(R.id.txtStage);
+		txtSatellites = (TextView) findViewById(R.id.txtSatellites);
 
 		txtLatitude = (TextView) findViewById(R.id.txtLatitude);
 		txtLongitude = (TextView) findViewById(R.id.txtLongitude);
@@ -146,10 +187,6 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 		btnUpdate = (Button) findViewById(R.id.btnUpdate);
 		iconActivity = (ImageView) findViewById(R.id.iconActivity);
 
-		// Get GPS state
-		Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		showLocation(location);
-
 		updateTrack();
 
 		// Wire buttons
@@ -157,20 +194,20 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 		btnStart.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				handler.post(TrackTask);
-				// TrackTask calls startLocating
 				btnStart.setEnabled(false);
 				btnStop.setEnabled(true);
 				btnUpdate.setEnabled(true);
+
+				Intent intent = new Intent(BackPackTrack.this, BPTService.class);
+				bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 			}
 		});
 
 		btnStop.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				handler.removeCallbacks(TrackTask);
-				txtStage.setText(R.string.na);
-				stopLocating();
+				unbindService(mConnection);
+
 				btnStart.setEnabled(true);
 				btnStop.setEnabled(false);
 				btnUpdate.setEnabled(false);
@@ -180,8 +217,9 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 		btnUpdate.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				handler.removeCallbacks(TrackTask);
-				handler.post(TrackTask);
+				unbindService(mConnection);
+				Intent intent = new Intent(BackPackTrack.this, BPTService.class);
+				bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 			}
 		});
 
@@ -231,14 +269,16 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menuWaypoint:
-			Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			showLocation(location);
+			Location location =
+			locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			//showLocation(location);
 			makeWaypoint(location);
 			return true;
 		case R.id.menuGeocode:
 			geocode();
 			return true;
 		case R.id.menuUpload:
+			updateTrack();
 			handler.post(UploadTask);
 			return true;
 		case R.id.menuDelete:
@@ -282,125 +322,20 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 		txtTrackName.setText(msg);
 	}
 
-	// Helper method start
-	protected void startLocating() {
-		if (!locating) {
-			locating = true;
-			fixwait = false;
-			long timeout = Integer.parseInt(preferences.getString(PREF_FIXTIMEOUT, PREF_FIXTIMEOUT_DEFAULT)) * 1000L;
-			handler.postDelayed(BlinkTask, 1000);
-			handler.postDelayed(FixTimeoutTask, timeout);
-
-			// http://developer.android.com/guide/topics/location/obtaining-user-location.html
-			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, BackPackTrack.this);
-			locationManager.addGpsStatusListener(BackPackTrack.this);
-
-			boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-			txtGpsState.setText(gpsEnabled ? getString(R.string.On) : getString(R.string.Off));
-			Date timeoutTime = new Date(System.currentTimeMillis() + timeout);
-			txtStage.setText(String.format(getString(R.string.StageFixWait), TIME_FORMATTER.format(timeoutTime)));
-			Toast.makeText(BackPackTrack.this, getString(R.string.TrackingStarted), Toast.LENGTH_LONG).show();
-		}
-	}
-
-	// Helper method stop
-	protected void stopLocating() {
-		if (locating) {
-			locating = false;
-			handler.removeCallbacks(BlinkTask);
-			handler.removeCallbacks(FixTimeoutTask);
-			handler.removeCallbacks(LocationWaitTask);
-			iconActivity.setVisibility(View.VISIBLE);
-
-			locationManager.removeGpsStatusListener(BackPackTrack.this);
-			locationManager.removeUpdates(BackPackTrack.this);
-
-			txtGpsState.setText(getString(R.string.na));
-			txtStatus.setText(getString(R.string.na));
-			txtSatellites.setText(getString(R.string.na));
-			Toast.makeText(BackPackTrack.this, getString(R.string.TrackingStopped), Toast.LENGTH_LONG).show();
-		}
-	}
-
-	// Handle location change
-	public void onLocationChanged(Location location) {
-		if (locating) {
-			handler.removeCallbacks(FixTimeoutTask);
-			int minAccuracy = Integer.parseInt(preferences.getString(PREF_MINACCURACY, PREF_MINACCURACY_DEFAULT));
-			if (fixwait) {
-				// Record best location
-				if (location.getAccuracy() <= bestLocation.getAccuracy())
-					bestLocation = location;
-
-				// Check if minimum accuracy reached
-				if (location.getAccuracy() < minAccuracy) {
-					handler.removeCallbacks(LocationWaitTask);
-					handler.post(LocationWaitTask);
-				}
-			} else {
-				fixwait = true;
-				bestLocation = location;
-				long wait = Integer.parseInt(preferences.getString(PREF_MAXWAIT, PREF_MAXWAIT_DEFAULT)) * 1000L;
-				handler.postDelayed(LocationWaitTask, wait);
-				Date waitTime = new Date(System.currentTimeMillis() + wait);
-				txtStage.setText(String.format(getString(R.string.StageTrackWait), TIME_FORMATTER.format(waitTime), minAccuracy));
-			}
-		}
-		showLocation(location);
-	}
-
-	// Tracking timer
-	final Runnable TrackTask = new Runnable() {
-		public void run() {
-			startLocating();
-			long interval = Integer.parseInt(preferences.getString(PREF_TRACKINTERVAL, PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
-			handler.postDelayed(this, interval);
-			nextTime = new Date(System.currentTimeMillis() + interval);
-		}
-	};
-
-	// Blink timer
-	final Runnable BlinkTask = new Runnable() {
-		public void run() {
-			handler.postDelayed(this, 1000);
-			if (iconActivity.getVisibility() == View.VISIBLE)
-				iconActivity.setVisibility(View.INVISIBLE);
-			else
-				iconActivity.setVisibility(View.VISIBLE);
-		}
-	};
-
-	// Fix wait done
-	final Runnable LocationWaitTask = new Runnable() {
-		public void run() {
-			stopLocating();
-			showLocation(bestLocation);
-			makeTrackpoint(bestLocation);
-			txtStage.setText(String.format(getString(R.string.StageTracked), TIME_FORMATTER.format(nextTime)));
-		}
-	};
-
-	// Fix timeout
-	final Runnable FixTimeoutTask = new Runnable() {
-		public void run() {
-			stopLocating();
-			txtStage.setText(String.format(getString(R.string.StageFixTimeout), TIME_FORMATTER.format(nextTime)));
-
-			// Use last location if younger
-			String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
-			Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			showLocation(location);
-			if (location != null && location.getTime() > databaseHelper.getYoungest(trackName, false))
-				makeTrackpoint(location);
-		}
-	};
-
 	// Handle camera button
 	final Runnable CameraButtonTask = new Runnable() {
 		public void run() {
-			Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			showLocation(location);
+			Location location =
+			locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			// showLocation(location);
 			makeWaypoint(location);
+		}
+	};
+
+	// Helper upload
+	final Runnable UploadTask = new Runnable() {
+		public void run() {
+			upload();
 		}
 	};
 
@@ -475,18 +410,6 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 		}
 	}
 
-	// Helper method create track point
-	protected void makeTrackpoint(Location location) {
-		if (location == null)
-			Toast.makeText(BackPackTrack.this, getString(R.string.Nolocation), Toast.LENGTH_LONG).show();
-		else {
-			String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
-			databaseHelper.insert(trackName, null, location, null, false);
-			updateTrack();
-			Toast.makeText(BackPackTrack.this, getString(R.string.TrackpointAdded), Toast.LENGTH_LONG).show();
-		}
-	}
-
 	// Helper method geocode
 	protected void geocode() {
 		final EditText editText = new EditText(this);
@@ -558,13 +481,6 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 		}
 		return address;
 	}
-
-	// Helper upload
-	final Runnable UploadTask = new Runnable() {
-		public void run() {
-			upload();
-		}
-	};
 
 	// Helper remove way point
 	protected void deleteWaypoint() {
@@ -677,90 +593,5 @@ public class BackPackTrack extends Activity implements LocationListener, GpsStat
 		} catch (Exception ex) {
 			Toast.makeText(BackPackTrack.this, ex.toString(), Toast.LENGTH_LONG).show();
 		}
-	}
-
-	// Helper show location
-	protected void showLocation(Location location) {
-		if (location == null) {
-			txtLatitude.setText(getString(R.string.na));
-			txtLongitude.setText(getString(R.string.na));
-			txtAltitude.setText(getString(R.string.na));
-			txtSpeed.setText(getString(R.string.na));
-			txtAccuracy.setText(getString(R.string.na));
-			txtTime.setText(getString(R.string.na));
-		} else {
-			txtLatitude.setText(String.format("%s", Location.convert(location.getLatitude(), Location.FORMAT_SECONDS)));
-			txtLongitude.setText(String
-					.format("%s", Location.convert(location.getLongitude(), Location.FORMAT_SECONDS)));
-			if (location.hasAltitude())
-				txtAltitude.setText(String.format("%dm", Math.round(location.getAltitude())));
-			else
-				txtAltitude.setText(getString(R.string.na));
-			if (location.hasSpeed())
-				txtSpeed.setText(String.format("%d m/s", Math.round(location.getSpeed())));
-			else
-				txtSpeed.setText(getString(R.string.na));
-			if (location.hasAccuracy())
-				txtAccuracy.setText(String.format("%dm", Math.round(location.getAccuracy())));
-			else
-				txtAccuracy.setText(getString(R.string.na));
-			if (location.getTime() > 0)
-				txtTime.setText(String.format("%s", DATETIME_FORMATTER.format(new Date(location.getTime()))));
-			else
-				txtTime.setText(getString(R.string.na));
-		}
-	}
-
-	// Handle location provider disabled
-	public void onProviderDisabled(String s) {
-		txtGpsState.setText(getString(R.string.Off));
-		txtStatus.setText(getString(R.string.na));
-		txtSatellites.setText(getString(R.string.na));
-	}
-
-	// Handle location provider enabled
-	public void onProviderEnabled(String s) {
-		txtGpsState.setText(getString(R.string.On));
-		txtStatus.setText(getString(R.string.na));
-		txtSatellites.setText(getString(R.string.na));
-	}
-
-	// Handle location provider change
-	public void onStatusChanged(String s, int i, Bundle b) {
-		if (i == LocationProvider.OUT_OF_SERVICE)
-			txtStatus.setText(getString(R.string.StatusNoService));
-		else if (i == LocationProvider.TEMPORARILY_UNAVAILABLE)
-			txtStatus.setText(getString(R.string.StatusUnavailable));
-		else if (i == LocationProvider.AVAILABLE)
-			txtStatus.setText(getString(R.string.StatusAvailable));
-		else
-			txtStatus.setText(String.format("Status %d", i));
-	}
-
-	// Handle GPS status change
-	public void onGpsStatusChanged(int event) {
-		if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
-			GpsStatus status = locationManager.getGpsStatus(null);
-			if (status != null) {
-				int fix = 0;
-				int count = 0;
-				Iterable<GpsSatellite> sats = status.getSatellites();
-				Iterator<GpsSatellite> satI = sats.iterator();
-				while (satI.hasNext()) {
-					GpsSatellite gpssatellite = satI.next();
-					count++;
-					if (gpssatellite.usedInFix())
-						fix++;
-				}
-				txtSatellites.setText(String.format("%d/%d", fix, count));
-			}
-		} else if (event == GpsStatus.GPS_EVENT_FIRST_FIX)
-			txtStatus.setText(getString(R.string.GpsFix));
-		else if (event == GpsStatus.GPS_EVENT_STARTED)
-			txtStatus.setText(getString(R.string.GpsStarted));
-		else if (event == GpsStatus.GPS_EVENT_STOPPED)
-			txtStatus.setText(getString(R.string.GpsStopped));
-		else
-			txtStatus.setText(String.format("Event %d", event));
 	}
 }
