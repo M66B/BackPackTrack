@@ -19,7 +19,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.view.Menu;
@@ -99,22 +98,22 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 				else
 					txtSatellites.setText(String.format("%d/%d", fix, count));
 			} else if (msg.what == MSG_LOCATION) {
-				txtLatitude.setText(String.format("%s", Location.convert(b.getDouble("Latitude"),
-						Location.FORMAT_SECONDS)));
-				txtLongitude.setText(String.format("%s", Location.convert(b.getDouble("Longitude"),
-						Location.FORMAT_SECONDS)));
-				txtAltitude.setText(String.format("%dm", Math.round(b.getDouble("Altitude"))));
-				txtSpeed.setText(String.format("%d m/s", Math.round(b.getDouble("Speed"))));
-				txtAccuracy.setText(String.format("%dm", Math.round(b.getDouble("Accuracy"))));
-				txtTime.setText(String.format("%s", DATETIME_FORMATTER.format(new Date(b.getLong("Time")))));
+				Location location = new Location(LocationManager.GPS_PROVIDER);
+				location.setLatitude(b.getDouble("Latitude"));
+				location.setLongitude(b.getDouble("Longitude"));
+				location.setAltitude(b.getDouble("Altitude"));
+				location.setSpeed(b.getFloat("Speed"));
+				location.setAccuracy(b.getFloat("Accuracy"));
+				location.setTime(b.getLong("Time"));
+				showLocation(location);
 			} else if (msg.what == MSG_UPDATETRACK)
 				updateTrack();
 		}
 	}
 
-	protected ServiceConnection mConnection = null;
-	protected Messenger mService = null;
-	protected Messenger mClient = new Messenger(new IncomingHandler());
+	protected ServiceConnection serviceConnection = null;
+	protected Messenger serviceMessenger = null;
+	protected Messenger clientMessenger = new Messenger(new IncomingHandler());
 
 	// User interface
 	protected TextView txtStage;
@@ -143,28 +142,24 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
+		Context context = getApplicationContext();
+
 		// Reference services
 		connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		databaseHelper = new DatabaseHelper(this);
-		preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+		databaseHelper = new DatabaseHelper(context);
+		preferences = PreferenceManager.getDefaultSharedPreferences(context);
 		preferences.registerOnSharedPreferenceChangeListener(this);
 		handler = new Handler();
 
-		mConnection = new ServiceConnection() {
+		serviceConnection = new ServiceConnection() {
 			public void onServiceConnected(ComponentName className, IBinder service) {
-				mService = new Messenger(service);
-				Message msg = Message.obtain();
-				msg.replyTo = mClient;
-				try {
-					mService.send(msg);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
+				serviceMessenger = new Messenger(service);
+				sendMessage(BPTService.MSG_REPLY, null);
 			}
 
 			public void onServiceDisconnected(ComponentName className) {
-				mService = null;
+				serviceMessenger = null;
 			}
 		};
 
@@ -199,14 +194,14 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 				btnUpdate.setEnabled(true);
 
 				Intent intent = new Intent(BackPackTrack.this, BPTService.class);
-				bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+				bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 			}
 		});
 
 		btnStop.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				unbindService(mConnection);
+				unbindService(serviceConnection);
 
 				btnStart.setEnabled(true);
 				btnStop.setEnabled(false);
@@ -217,9 +212,9 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		btnUpdate.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				unbindService(mConnection);
+				unbindService(serviceConnection);
 				Intent intent = new Intent(BackPackTrack.this, BPTService.class);
-				bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+				bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 			}
 		});
 
@@ -269,9 +264,8 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menuWaypoint:
-			Location location =
-			locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			//showLocation(location);
+			Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			showLocation(location);
 			makeWaypoint(location);
 			return true;
 		case R.id.menuGeocode:
@@ -325,9 +319,8 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	// Handle camera button
 	final Runnable CameraButtonTask = new Runnable() {
 		public void run() {
-			Location location =
-			locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			// showLocation(location);
+			Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			showLocation(location);
 			makeWaypoint(location);
 		}
 	};
@@ -338,6 +331,26 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			upload();
 		}
 	};
+
+	protected void showLocation(Location location) {
+		if (location == null) {
+			txtLatitude.setText(R.string.na);
+			txtLongitude.setText(R.string.na);
+			txtAltitude.setText(R.string.na);
+			txtSpeed.setText(R.string.na);
+			txtAccuracy.setText(R.string.na);
+			txtTime.setText(R.string.na);
+		}
+		else {
+			txtLatitude.setText(String.format("%s", Location.convert(location.getLatitude(), Location.FORMAT_SECONDS)));
+			txtLongitude.setText(String
+					.format("%s", Location.convert(location.getLongitude(), Location.FORMAT_SECONDS)));
+			txtAltitude.setText(String.format("%dm", Math.round(location.getAltitude())));
+			txtSpeed.setText(String.format("%d m/s", Math.round(location.getSpeed())));
+			txtAccuracy.setText(String.format("%dm", Math.round(location.getAccuracy())));
+			txtTime.setText(String.format("%s", DATETIME_FORMATTER.format(new Date(location.getTime()))));
+		}
+	}
 
 	// Helper method create way point
 	protected void makeWaypoint(final Location location) {
@@ -592,6 +605,21 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			Toast.makeText(BackPackTrack.this, resultURL, Toast.LENGTH_LONG).show();
 		} catch (Exception ex) {
 			Toast.makeText(BackPackTrack.this, ex.toString(), Toast.LENGTH_LONG).show();
+		}
+	}
+
+	void sendMessage(int type, Bundle data) {
+		if (serviceMessenger != null) {
+			try {
+				Message msg = Message.obtain();
+				msg.what = type;
+				msg.replyTo = clientMessenger;
+				if (data != null)
+					msg.setData(data);
+				serviceMessenger.send(msg);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
