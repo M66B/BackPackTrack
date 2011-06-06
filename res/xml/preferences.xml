@@ -2,30 +2,35 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 	<PreferenceCategory android:title="Blog">
 		<EditTextPreference android:key="BlogURL"
-			android:title="URL" android:defaultValue="http://dev.bokhorst.biz/"></EditTextPreference>
+			android:title="URL" android:defaultValue="http://dev.bokhorst.biz/"
+			android:summary="Weblog URL including trailing slash" />
 		<EditTextPreference android:key="BlogID"
-			android:title="ID" android:defaultValue="1"></EditTextPreference>
+			android:title="ID" android:defaultValue="1"
+			android:summary="Weblog identifier, one for single site installs" />
 		<EditTextPreference android:key="BlogUser"
-			android:title="User"></EditTextPreference>
+			android:title="User" android:summary="Weblog user name" />
 		<EditTextPreference android:key="BlogPwd"
-			android:title="Password"></EditTextPreference>
+			android:password="true" android:title="Password" android:summary="Weblog pass word" />
 	</PreferenceCategory>
 	<PreferenceCategory android:title="Tracking">
 		<EditTextPreference android:key="TrackName"
-			android:title="Track name" android:defaultValue="Journey"></EditTextPreference><ListPreference android:title="Track names" android:key="TrackNameList"></ListPreference><EditTextPreference android:key="TrackInterval"
+			android:title="Track name" android:defaultValue="Journey" />
+		<ListPreference android:title="Track names"
+			android:key="TrackNameList" />
+		<EditTextPreference android:key="TrackInterval"
 			android:title="Track interval" android:defaultValue="30"
-			android:summary="minutes"></EditTextPreference>
+			android:summary="Create track point every xxx minutes" />
 		<EditTextPreference android:key="FixTimeout"
 			android:title="Fix timeout" android:defaultValue="300"
-			android:summary="seconds"></EditTextPreference>
+			android:summary="Wait for GPS fix for xxx seconds" />
 		<EditTextPreference android:key="MaxWait"
-			android:title="Max. wait" android:defaultValue="60" android:summary="seconds"></EditTextPreference>
+			android:title="Max. wait" android:defaultValue="60"
+			android:summary="Wait for best location for xxx seconds" />
 		<EditTextPreference android:key="MinAccuracy"
 			android:title="Min. accuracy" android:defaultValue="50"
-			android:summary="meters"></EditTextPreference>
+			android:summary="Wait for best location until xxx meters accuracy" />
 		<EditTextPreference android:key="GeocodeCount"
-			android:title="Geocode count" android:defaultValue="5"></EditTextPreference>
-		
-		
+			android:title="Geocode count" android:defaultValue="5"
+			android:summary="Number of names to display when geocoding" />
 	</PreferenceCategory>
 </PreferenceScreen>

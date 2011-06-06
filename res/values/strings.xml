@@ -22,6 +22,7 @@
 	<string name="Off">Off</string>
 	<string name="WaypointAdded">Waypoint \'%s\' added</string>
 	<string name="TrackpointAdded">Trackpoint added</string>
+	<string name="WaypointRenamed" formatted="false">Waypoint \'%s\' renamed into \'%s\</string>
 	<string name="DeleteWaypoint">Delete waypoint \'%s\' ?</string>
 	<string name="WaypointDeleted">Waypoint \'%s\' deleted</string>
 	<string name="ClearTrack">Clear track \'%s\' ?</string>
@@ -36,6 +37,8 @@
 	<string name="Quit">Quit ?</string>
 	<string name="Geocode">Geocode</string>
 	<string name="Upload">Upload</string>
+	<string name="Edit">Edit</string>
+	<string name="Rename">Rename</string>
 	<string name="Delete">Delete</string>
 	<string name="Clear">Clear</string>
 	<string name="Settings">Settings</string>

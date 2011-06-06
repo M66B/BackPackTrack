@@ -85,6 +85,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		return cursor.getInt(0);
 	}
 
+	public void rename(long id, String name) {
+		SQLiteDatabase db = this.getWritableDatabase();
+		ContentValues cv = new ContentValues();
+		cv.put("NAME", name);
+		db.update("LOCATION", cv, "ID=" + Long.toString(id), new String[] {});
+	}
+
 	public void delete(long id) {
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.delete("LOCATION", "ID=" + Long.toString(id), new String[] {});
