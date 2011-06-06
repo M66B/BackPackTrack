@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.Cursor;
 
 import android.location.Location;
+import android.location.LocationManager;
 import android.widget.Toast;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -53,6 +54,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		cv.put("NAME", name);
 		cv.put("WPT", wpt);
 		db.insert("LOCATION", null, cv);
+	}
+
+	public Location getLocation(long id) {
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor cursor = db.rawQuery("SELECT LATITUDE, LONGITUDE, ALTITUDE, SPEED, ACCURACY, TIME FROM LOCATION"
+				+ " WHERE ID=" + Long.toString(id), new String[] {});
+		if (cursor.moveToFirst()) {
+			Location location = new Location(LocationManager.GPS_PROVIDER);
+			location.setLatitude(cursor.getDouble(0));
+			location.setLongitude(cursor.getDouble(1));
+			location.setAltitude(cursor.getDouble(2));
+			location.setSpeed(cursor.getFloat(3));
+			location.setAccuracy(cursor.getFloat(4));
+			location.setTime(cursor.getLong(5));
+			return location;
+		}
+		return null;
 	}
 
 	public Cursor getList(String trackName, boolean wpt) {

@@ -278,12 +278,12 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		case R.id.menuGeocode:
 			geocode();
 			return true;
+		case R.id.menuEdit:
+			editWaypoint();
+			return true;
 		case R.id.menuUpload:
 			updateTrack();
 			handler.post(UploadTask);
-			return true;
-		case R.id.menuEdit:
-			editWaypoint();
 			return true;
 		case R.id.menuClear:
 			clearTrack();
@@ -358,79 +358,19 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	}
 
 	// Helper create way point
-	private void makeWaypoint(final Location location) {
-		if (location == null)
-			Toast.makeText(BackPackTrack.this, getString(R.string.Nolocation), Toast.LENGTH_LONG).show();
-		else {
-			// Reverse geocode
-			List<Address> lstAddressG = null;
-			try {
-				final NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-				if (activeNetwork != null && activeNetwork.getState() == NetworkInfo.State.CONNECTED) {
-					Geocoder geocoder = new Geocoder(BackPackTrack.this);
-					int count = Integer.parseInt(preferences.getString(PREF_GEOCODECOUNT, PREF_GEOCODECOUNT_DEFAULT));
-					lstAddressG = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), count);
-				}
-			} catch (Exception ex) {
-				Toast.makeText(BackPackTrack.this, ex.toString(), Toast.LENGTH_LONG).show();
-			}
-
-			if (lstAddressG == null)
-				askAddress(location);
-			else {
-				final List<Address> lstAddress = lstAddressG;
-				final CharSequence[] address = getAddresses(lstAddress);
-
-				// Select address
-				AlertDialog.Builder b = new AlertDialog.Builder(BackPackTrack.this);
-				b.setTitle(getString(R.string.Address));
-				b.setItems(address, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int item) {
-						if (lstAddress.get(item).hasLatitude() && lstAddress.get(item).hasLongitude())
-							makeWaypoint(location, (String) address[item]);
-						else
-							Toast.makeText(BackPackTrack.this, getString(R.string.Nolocation), Toast.LENGTH_LONG)
-									.show();
-					}
-				});
-				b.setOnCancelListener(new DialogInterface.OnCancelListener() {
-					public void onCancel(DialogInterface dialog) {
-						askAddress(location);
-					}
-				});
-				b.show();
-			}
-		}
-	}
-
-	// Helper ask address / make way point
-	private void askAddress(final Location location) {
+	private void makeWaypoint(Location location) {
 		String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
 		int count = databaseHelper.count(trackName, true);
-
-		final EditText editText = new EditText(BackPackTrack.this);
-		editText.setText(String.format("%03d", count + 1));
-		AlertDialog.Builder b = new AlertDialog.Builder(BackPackTrack.this);
-		b.setTitle(getString(R.string.app_name));
-		b.setMessage(getString(R.string.Waypoint));
-		b.setView(editText).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				makeWaypoint(location, editText.getText().toString());
-			}
-		});
-		b.setNegativeButton(android.R.string.cancel, null);
-		b.show();
+		String name = String.format("%03d", count + 1);
+		makeWaypoint(location, name);
 	}
 
-	// Helper create way point
 	private void makeWaypoint(Location location, String name) {
-		if (name.length() != 0) {
-			String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
-			databaseHelper.insert(trackName, null, location, name, true);
-			updateTrack();
-			String msg = String.format(getString(R.string.WaypointAdded), name);
-			Toast.makeText(BackPackTrack.this, msg, Toast.LENGTH_LONG).show();
-		}
+		String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
+		databaseHelper.insert(trackName, null, location, name, true);
+		updateTrack();
+		String msg = String.format(getString(R.string.WaypointAdded), name);
+		Toast.makeText(BackPackTrack.this, msg, Toast.LENGTH_LONG).show();
 	}
 
 	// Helper method geocode
@@ -527,12 +467,15 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			public void onClick(DialogInterface dialog, final int item) {
 				AlertDialog.Builder a = new AlertDialog.Builder(BackPackTrack.this);
 				a.setTitle(R.string.Edit);
-				CharSequence[] actions = new CharSequence[] { getString(R.string.Rename), getString(R.string.Delete) };
+				CharSequence[] actions = new CharSequence[] { getString(R.string.Rename), getString(R.string.Locate),
+						getString(R.string.Delete) };
 				a.setItems(actions, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int action) {
-						if (action == 0) // Rename
+						if (action == 0)
 							renameWaypoint(lstId.get(item), lstName.get(item));
-						else if (action == 1) // Delete
+						else if (action == 1)
+							reverseGeocode(lstId.get(item), lstName.get(item));
+						else if (action == 2)
 							deleteWaypoint(lstId.get(item), lstName.get(item));
 					}
 				});
@@ -553,13 +496,44 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			public void onClick(DialogInterface dialog, int whichButton) {
 				String newName = editText.getText().toString();
 				databaseHelper.rename(id, newName);
-				updateTrack();
 				String msg = String.format(getString(R.string.WaypointRenamed), name, newName);
 				Toast.makeText(BackPackTrack.this, msg, Toast.LENGTH_LONG).show();
 			}
 		});
 		b.setNegativeButton(android.R.string.cancel, null);
 		b.show();
+	}
+
+	// Helper reverse geocode
+	private void reverseGeocode(final long id, final String name) {
+		try {
+			// Reverse geocode
+			Location location = databaseHelper.getLocation(id);
+			Geocoder geocoder = new Geocoder(BackPackTrack.this);
+			int count = Integer.parseInt(preferences.getString(PREF_GEOCODECOUNT, PREF_GEOCODECOUNT_DEFAULT));
+			final List<Address> lstAddress = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(),
+					count);
+			final CharSequence[] address = getAddresses(lstAddress);
+
+			// Select address
+			AlertDialog.Builder b = new AlertDialog.Builder(BackPackTrack.this);
+			b.setTitle(getString(R.string.Address));
+			b.setItems(address, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					if (lstAddress.get(item).hasLatitude() && lstAddress.get(item).hasLongitude()) {
+						String newName = (String) address[item];
+						databaseHelper.rename(id, newName);
+						String msg = String.format(getString(R.string.WaypointRenamed), name, newName);
+						Toast.makeText(BackPackTrack.this, msg, Toast.LENGTH_LONG).show();
+					}
+					else
+						Toast.makeText(BackPackTrack.this, getString(R.string.Nolocation), Toast.LENGTH_LONG).show();
+				}
+			});
+			b.show();
+		} catch (Exception ex) {
+			Toast.makeText(BackPackTrack.this, ex.toString(), Toast.LENGTH_LONG).show();
+		}
 	}
 
 	// Helper remove way point

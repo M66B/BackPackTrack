@@ -2,8 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<item android:id="@+id/menuWaypoint" android:title="@string/Waypoint"></item>
 	<item android:id="@+id/menuGeocode" android:title="@string/Geocode"></item>
-	<item android:id="@+id/menuUpload" android:title="@string/Upload"></item>
 	<item android:id="@+id/menuEdit" android:title="@string/Edit"></item>
+	<item android:id="@+id/menuUpload" android:title="@string/Upload"></item>
 	<item android:id="@+id/menuClear" android:title="@string/Clear"></item>
 	<item android:id="@+id/menuSettings" android:title="@string/Settings"></item>
 </menu>
