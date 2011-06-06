@@ -17,8 +17,37 @@ public class Preferences extends PreferenceActivity {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
 
-		ListPreference lp = (ListPreference) this.getPreferenceScreen().findPreference("TrackNameList");
+		// Track name
+		Preference p = this.getPreferenceScreen().findPreference("TrackName");
+		p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				ListPreference lp = (ListPreference) Preferences.this.getPreferenceScreen().findPreference(
+						"TrackNameList");
+				SharedPreferences.Editor editor = lp.getEditor();
+				editor.putString("TrackNameList", (String) newValue);
+				editor.commit();
+				setTrackNameList(lp);
+				return true;
+			}
+		});
 
+		// Track name list
+		ListPreference lp = (ListPreference) this.getPreferenceScreen().findPreference("TrackNameList");
+		setTrackNameList(lp);
+		lp.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				Preference p = Preferences.this.getPreferenceScreen().findPreference("TrackName");
+				SharedPreferences.Editor editor = p.getEditor();
+				editor.putString("TrackName", (String) newValue);
+				editor.commit();
+				return true;
+			}
+		});
+	}
+
+	private void setTrackNameList(ListPreference lp) {
 		DatabaseHelper databaseHelper = new DatabaseHelper(this);
 		final List<String> lstName = new ArrayList<String>();
 		Cursor c = databaseHelper.getTrackNames();
@@ -33,15 +62,5 @@ public class Preferences extends PreferenceActivity {
 
 		lp.setEntries(name);
 		lp.setEntryValues(name);
-		lp.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				Preference p = Preferences.this.getPreferenceScreen().findPreference("TrackName");
-				SharedPreferences.Editor editor = p.getEditor();
-				editor.putString("TrackName", (String)newValue);
-				editor.commit();
-				return true;
-			}
-		});
 	}
 }

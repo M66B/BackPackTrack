@@ -22,7 +22,8 @@
 	<string name="Off">Off</string>
 	<string name="WaypointAdded">Waypoint \'%s\' added</string>
 	<string name="TrackpointAdded">Trackpoint added</string>
-	<string name="WaypointRenamed" formatted="false">Waypoint \'%s\' renamed into \'%s\</string>
+	<string name="WaypointRenamed" formatted="false">Waypoint \'%s\' renamed
+		into \'%s\</string>
 	<string name="DeleteWaypoint">Delete waypoint \'%s\' ?</string>
 	<string name="WaypointDeleted">Waypoint \'%s\' deleted</string>
 	<string name="ClearTrack">Clear track \'%s\' ?</string>
@@ -46,7 +47,13 @@
 	<string name="Settings">Settings</string>
 	<string name="Nolocation">No location</string>
 	<string name="StageFixWait">Fix wait until %s</string>
-	<string name="StageTrackWait" formatted="false">Tracking until %s %dm</string>
+	<string name="StageTrackWait" formatted="false">Tracking until %s %dm
+	</string>
 	<string name="StageFixTimeout">Fix timeout, next %s</string>
 	<string name="StageTracked">Tracked, next %s</string>
+	<string name="Satellite">Satellite</string>
+	<string name="StreetView">StreetView</string>
+	<string name="Traffic">Traffic</string>
+	<string name="mvApikeyDebug">0fHCwXLhxjaIfExOIcGB-6h9liWNcM1HTSZ1OLw</string>
+	<string name="mvApikeyRelease">0fHCwXLhxjaIKIiPxJyumXgvQeLmxKMh29qJ3-w</string>
 </resources>

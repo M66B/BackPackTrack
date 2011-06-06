@@ -77,7 +77,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		SQLiteDatabase db = this.getReadableDatabase();
 		return db.rawQuery(
 				"SELECT ID, TRACK, SEGMENT, LATITUDE, LONGITUDE, ALTITUDE, SPEED, ACCURACY, TIME, NAME FROM LOCATION"
-						+ " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0") + " ORDER BY TIME" , new String[] { trackName });
+						+ " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0") + " ORDER BY TIME", new String[] { trackName });
 	}
 
 	public long getYoungest(String trackName, boolean wpt) {
@@ -91,7 +91,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public Cursor getTrackNames() {
 		SQLiteDatabase db = this.getReadableDatabase();
-		return db.rawQuery("SELECT DISTINCT TRACK FROM LOCATION", new String[] {});
+		return db.rawQuery("SELECT DISTINCT TRACK FROM LOCATION ORDER BY TRACK", new String[] {});
 	}
 
 	public int count(String trackName, boolean wpt) {
