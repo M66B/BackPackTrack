@@ -86,7 +86,8 @@
 		</TableRow>
 	</TableLayout>
 	<TableLayout android:layout_width="fill_parent" android:id="@+id/tableLayout2"
-		android:layout_height="wrap_content" android:paddingLeft="5dip" android:paddingTop="5dip">
+		android:layout_height="wrap_content" android:paddingLeft="5dip"
+		android:paddingTop="5dip">
 		<TableRow android:id="@+id/tableRow21" android:layout_width="wrap_content"
 			android:layout_height="wrap_content">
 			<Button android:enabled="true" android:text="@string/Start"

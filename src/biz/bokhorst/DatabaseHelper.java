@@ -77,7 +77,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		SQLiteDatabase db = this.getReadableDatabase();
 		return db.rawQuery(
 				"SELECT ID, TRACK, SEGMENT, LATITUDE, LONGITUDE, ALTITUDE, SPEED, ACCURACY, TIME, NAME FROM LOCATION"
-						+ " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0"), new String[] { trackName });
+						+ " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0") + " ORDER BY TIME" , new String[] { trackName });
 	}
 
 	public long getYoungest(String trackName, boolean wpt) {

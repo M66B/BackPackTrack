@@ -36,11 +36,12 @@
 	<string name="Address">Address</string>
 	<string name="Quit">Quit ?</string>
 	<string name="Geocode">Geocode</string>
-	<string name="Upload">Upload</string>
 	<string name="Edit">Edit</string>
 	<string name="Rename">Rename</string>
 	<string name="Locate">Locate</string>
 	<string name="Delete">Delete</string>
+	<string name="Upload">Upload</string>
+	<string name="Map">Map</string>
 	<string name="Clear">Clear</string>
 	<string name="Settings">Settings</string>
 	<string name="Nolocation">No location</string>

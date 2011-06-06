@@ -28,7 +28,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.content.BroadcastReceiver;
@@ -77,7 +76,6 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 
 	// Helpers
 	private ConnectivityManager connectivityManager = null;
-	private LocationManager locationManager = null;
 	private DatabaseHelper databaseHelper = null;
 	private SharedPreferences preferences = null;
 	private Handler handler = null;
@@ -134,6 +132,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	// State
 	private boolean foreground = false;
 	private boolean started = false;
+	private boolean waypoint = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -144,7 +143,6 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 
 		// Reference services
 		connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		databaseHelper = new DatabaseHelper(context);
 		preferences = PreferenceManager.getDefaultSharedPreferences(context);
 		preferences.registerOnSharedPreferenceChangeListener(this);
@@ -153,7 +151,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		serviceConnection = new ServiceConnection() {
 			public void onServiceConnected(ComponentName className, IBinder service) {
 				serviceMessenger = new Messenger(service);
-				sendMessage(BPTService.MSG_REPLY, null);
+				sendMessage(waypoint ? BPTService.MSG_WAYPOINT : BPTService.MSG_REPLY, null);
 			}
 
 			public void onServiceDisconnected(ComponentName className) {
@@ -186,15 +184,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		btnStart.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (!started) {
-					started = true;
-					btnStart.setEnabled(false);
-					btnStop.setEnabled(true);
-					btnUpdate.setEnabled(true);
-
-					Intent intent = new Intent(BackPackTrack.this, BPTService.class);
-					bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-				}
+				start();
 			}
 		});
 
@@ -202,14 +192,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		btnStop.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (started) {
-					started = false;
-					unbindService(serviceConnection);
-
-					btnStart.setEnabled(true);
-					btnStop.setEnabled(false);
-					btnUpdate.setEnabled(false);
-				}
+				stop();
 			}
 		});
 
@@ -217,11 +200,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		btnUpdate.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (started)
-					unbindService(serviceConnection);
-				started = true;
-				Intent intent = new Intent(BackPackTrack.this, BPTService.class);
-				bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+				update();
 			}
 		});
 
@@ -251,13 +230,6 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		super.onResume();
 	}
 
-	// Monitor preference change
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (key.equals(PREF_TRACKNAME))
-			updateTrack();
-	}
-
 	// Wire options menu
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -266,14 +238,21 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		return true;
 	}
 
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		MenuItem menuItemGeocode = menu.findItem(R.id.menuGeocode);
+		NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+		menuItemGeocode.setEnabled(activeNetwork != null && activeNetwork.getState() == NetworkInfo.State.CONNECTED);
+		return true;
+	}
+
 	// Handle option selection
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menuWaypoint:
-			Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			showLocation(location);
-			makeWaypoint(location);
+			waypoint = true;
+			update();
 			return true;
 		case R.id.menuGeocode:
 			geocode();
@@ -284,6 +263,10 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		case R.id.menuUpload:
 			updateTrack();
 			handler.post(UploadTask);
+			return true;
+		case R.id.menuMap:
+			Intent mapIntent = new Intent(getBaseContext(), BPTMap.class);
+			startActivity(mapIntent);
 			return true;
 		case R.id.menuClear:
 			clearTrack();
@@ -313,12 +296,18 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		b.show();
 	}
 
+	// Monitor preference change
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		if (key.equals(PREF_TRACKNAME))
+			updateTrack();
+	}
+
 	// Handle camera button
 	final Runnable CameraButtonTask = new Runnable() {
 		public void run() {
-			Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			showLocation(location);
-			makeWaypoint(location);
+			waypoint = true;
+			update();
 		}
 	};
 
@@ -328,6 +317,34 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			upload();
 		}
 	};
+
+	private void start() {
+		if (!started) {
+			started = true;
+			btnStart.setEnabled(false);
+			btnStop.setEnabled(true);
+			btnUpdate.setEnabled(true);
+
+			Intent intent = new Intent(BackPackTrack.this, BPTService.class);
+			bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+		}
+	}
+
+	private void stop() {
+		if (started) {
+			started = false;
+			unbindService(serviceConnection);
+
+			btnStart.setEnabled(true);
+			btnStop.setEnabled(false);
+			btnUpdate.setEnabled(false);
+		}
+	}
+
+	private void update() {
+		stop();
+		start();
+	}
 
 	// Helper update track
 	private void updateTrack() {
@@ -355,14 +372,6 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			txtAccuracy.setText(String.format("%dm", Math.round(location.getAccuracy())));
 			txtTime.setText(String.format("%s", DATETIME_FORMATTER.format(new Date(location.getTime()))));
 		}
-	}
-
-	// Helper create way point
-	private void makeWaypoint(Location location) {
-		String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
-		int count = databaseHelper.count(trackName, true);
-		String name = String.format("%03d", count + 1);
-		makeWaypoint(location, name);
 	}
 
 	private void makeWaypoint(Location location, String name) {
@@ -456,6 +465,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			lstName.add(c.getString(c.getColumnIndex("NAME")));
 			c.moveToNext();
 		}
+		c.close();
 		CharSequence[] name = new CharSequence[lstName.size()];
 		for (int i = 0; i < lstName.size(); i++)
 			name[i] = lstName.get(i);
@@ -467,18 +477,23 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			public void onClick(DialogInterface dialog, final int item) {
 				AlertDialog.Builder a = new AlertDialog.Builder(BackPackTrack.this);
 				a.setTitle(R.string.Edit);
-				CharSequence[] actions = new CharSequence[] { getString(R.string.Rename), getString(R.string.Locate),
-						getString(R.string.Delete) };
-				a.setItems(actions, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int action) {
-						if (action == 0)
-							renameWaypoint(lstId.get(item), lstName.get(item));
-						else if (action == 1)
-							reverseGeocode(lstId.get(item), lstName.get(item));
-						else if (action == 2)
-							deleteWaypoint(lstId.get(item), lstName.get(item));
-					}
-				});
+				final List<CharSequence> lstActions = new ArrayList<CharSequence>();
+				lstActions.add(getString(R.string.Rename));
+				NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+				if (activeNetwork != null && activeNetwork.getState() == NetworkInfo.State.CONNECTED)
+					lstActions.add(getString(R.string.Address));
+				lstActions.add(getString(R.string.Delete));
+				a.setItems((CharSequence[]) lstActions.toArray(new CharSequence[0]),
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int action) {
+								if (lstActions.get(action).equals(getString(R.string.Rename)))
+									renameWaypoint(lstId.get(item), lstName.get(item));
+								else if (lstActions.get(action).equals(getString(R.string.Address)))
+									reverseGeocode(lstId.get(item), lstName.get(item));
+								else if (lstActions.get(action).equals(getString(R.string.Delete)))
+									deleteWaypoint(lstId.get(item), lstName.get(item));
+							}
+						});
 				a.show();
 			}
 		});
@@ -525,8 +540,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 						databaseHelper.rename(id, newName);
 						String msg = String.format(getString(R.string.WaypointRenamed), name, newName);
 						Toast.makeText(BackPackTrack.this, msg, Toast.LENGTH_LONG).show();
-					}
-					else
+					} else
 						Toast.makeText(BackPackTrack.this, getString(R.string.Nolocation), Toast.LENGTH_LONG).show();
 				}
 			});
