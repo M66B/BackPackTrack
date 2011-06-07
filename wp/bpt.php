@@ -44,28 +44,40 @@ function bpt_upload($args) {
 			return new IXR_Error(401, __('You are not allowed to upload files to this site.'));
 		}
 
-		// Handle overwrite
-		if (!empty($data['overwrite']) && ($data['overwrite'] == true)) {
-			logIO('O', 'bpt.upload overwrite');
-			$old_file = $wpdb->get_row("SELECT ID FROM {$wpdb->posts} WHERE post_title = '{$name}' AND post_type = 'attachment'");
-			wp_delete_attachment($old_file->ID);
-		}
-
 		// Save file
 		$upload = wp_upload_bits($name, NULL, $bits);
 		if (!empty($upload['error'])) {
 			$error = sprintf(__('Could not write file %1$s (%2$s)'), $name, $upload['error']);
-			logIO('O', 'bpt.upload (MW) ' . $error);
+			logIO('O', 'bpt.upload ' . $error);
 			return new IXR_Error(500, $error);
 		}
 
+		// Find post
+		$post = $wpdb->get_row("SELECT ID FROM {$wpdb->posts} WHERE post_title = '{$name}' AND post_type = 'attachment'");
+		if (empty($post)) {
+			get_currentuserinfo();
+			global $user_ID;
+			// Create new draft post
+			$post_data = array(
+				'post_title' => basename($name),
+				'post_content' => '<a href="' . $upload['url'] . '">' . $name . '</a>',
+				'post_status' => 'draft',
+				'post_author' => $user_ID
+			);
+			$post->ID = wp_insert_post($post_data);
+			logIO('O', 'bpt.upload post=' . $post->ID);
+		}
+		else {
+			wp_delete_attachment($post->ID);
+			logIO('O', 'bpt.upload deleted attachment post=' . $post->ID);
+		}
+
 		// Attach file
-		$post_id = 0;
 		$attachment = array(
 			'post_title' => $name,
 			'post_content' => '',
 			'post_type' => 'attachment',
-			'post_parent' => $post_id,
+			'post_parent' => $post->ID,
 			'post_mime_type' => $type,
 			'guid' => $upload['url']
 		);

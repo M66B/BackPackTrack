@@ -69,7 +69,8 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 	private class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
-			clientMessenger = msg.replyTo;
+			if (msg.replyTo != null)
+				clientMessenger = msg.replyTo;
 			waypoint = (msg.what == MSG_WAYPOINT);
 			handler.post(TrackTask);
 		}
@@ -182,7 +183,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 		public void run() {
 			startLocating();
 			long interval = Integer.parseInt(preferences.getString(PREF_TRACKINTERVAL, PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
-			handler.postDelayed(this, interval);
+			handler.postDelayed(TrackTask, interval);
 			nextTrackTime = new Date(System.currentTimeMillis() + interval);
 		}
 	};
