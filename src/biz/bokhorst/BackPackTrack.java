@@ -30,7 +30,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -594,7 +593,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			Object[] params = { blogId, userName, passWord, m };
 
 			// Upload file
-			Object result = (Object) xmlrpc.call("wp.uploadFile", params);
+			Object result = (Object) xmlrpc.call("bpt.upload", params);
 
 			// Check result
 			HashMap<Object, Object> contentHash = (HashMap<Object, Object>) result;
