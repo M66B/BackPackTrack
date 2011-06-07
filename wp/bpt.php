@@ -38,10 +38,37 @@ function bpt_upload($args) {
 			return $wp_xmlrpc_server->error;
 		}
 
+		do_action('xmlrpc_call', 'metaWeblog.newMediaObject');
+
 		// Check user capabilities
 		if (!current_user_can('upload_files')) {
 			logIO('O', 'bpt.upload no capability');
 			return new IXR_Error(401, __('You are not allowed to upload files to this site.'));
+		}
+
+		if ($error = apply_filters('pre_upload_error', false))
+			return new IXR_Error(500, $error);
+
+		// Find post
+		$attached = $wpdb->get_row("SELECT ID, post_parent FROM {$wpdb->posts} WHERE post_title = '{$name}' AND post_type = 'attachment'");
+		if (empty($attached)) {
+			get_currentuserinfo();
+			global $user_ID;
+			$upload_dir = wp_upload_dir();
+			// Create new draft post
+			$post_data = array(
+				'post_title' => $name,
+				'post_content' => '<a href="' . $upload_dir['url'] . '/' . $name . '">' . $name . '</a>',
+				'post_status' => 'draft',
+				'post_author' => $user_ID
+			);
+			$post_ID = wp_insert_post($post_data);
+			logIO('O', 'bpt.upload post=' . $post_ID);
+		}
+		else {
+			$post_ID = $attached->post_parent;
+			wp_delete_attachment($attached->ID);
+			logIO('O', 'bpt.upload deleted attachment id=' . $attached->ID . ' post=' . $post_ID);
 		}
 
 		// Save file
@@ -52,36 +79,16 @@ function bpt_upload($args) {
 			return new IXR_Error(500, $error);
 		}
 
-		// Find post
-		$post = $wpdb->get_row("SELECT ID FROM {$wpdb->posts} WHERE post_title = '{$name}' AND post_type = 'attachment'");
-		if (empty($post)) {
-			get_currentuserinfo();
-			global $user_ID;
-			// Create new draft post
-			$post_data = array(
-				'post_title' => basename($name),
-				'post_content' => '<a href="' . $upload['url'] . '">' . $name . '</a>',
-				'post_status' => 'draft',
-				'post_author' => $user_ID
-			);
-			$post->ID = wp_insert_post($post_data);
-			logIO('O', 'bpt.upload post=' . $post->ID);
-		}
-		else {
-			wp_delete_attachment($post->ID);
-			logIO('O', 'bpt.upload deleted attachment post=' . $post->ID);
-		}
-
 		// Attach file
 		$attachment = array(
 			'post_title' => $name,
 			'post_content' => '',
 			'post_type' => 'attachment',
-			'post_parent' => $post->ID,
+			'post_parent' => $post_ID,
 			'post_mime_type' => $type,
 			'guid' => $upload['url']
 		);
-		$id = wp_insert_attachment($attachment, $upload['file'], $post_id);
+		$id = wp_insert_attachment($attachment, $upload['file'], $post_ID);
 		wp_update_attachment_metadata($id, wp_generate_attachment_metadata($id, $upload['file']));
 
 		logIO('O', 'bpt.upload attachment=' . $id);
