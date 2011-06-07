@@ -34,7 +34,6 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.DialogInterface;
@@ -61,7 +60,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	private static final String PREF_BLOGUSER = "BlogUser";
 	private static final String PREF_BLOGPWD = "BlogPwd";
 
-	private static final String PREF_BLOGURL_DEFAULT = "http://dev.bokhorst.biz/";
+	private static final String PREF_BLOGURL_DEFAULT = "";
 	private static final String PREF_BLOGID_DEFAULT = "1";
 	private static final String PREF_BLOGUSER_DEFAULT = "";
 	private static final String PREF_BLOGPWD_DEFAULT = "";
@@ -79,7 +78,6 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	private DatabaseHelper databaseHelper = null;
 	private SharedPreferences preferences = null;
 	private Handler handler = null;
-	private BroadcastReceiver broadcastReceiver = null;
 
 	private class IncomingHandler extends Handler {
 		@Override
@@ -128,9 +126,10 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	private Button btnStart;
 	private Button btnStop;
 	private Button btnUpdate;
+	private Button btnWaypoint;
+	private Button btnGeocode;
 
 	// State
-	private boolean foreground = false;
 	private boolean started = false;
 	private boolean waypoint = false;
 
@@ -177,6 +176,8 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		btnStart = (Button) findViewById(R.id.btnStart);
 		btnStop = (Button) findViewById(R.id.btnStop);
 		btnUpdate = (Button) findViewById(R.id.btnUpdate);
+		btnWaypoint = (Button) findViewById(R.id.btnWaypoint);
+		btnGeocode = (Button) findViewById(R.id.btnGeocode);
 
 		// Initialize UI
 		updateTrack();
@@ -205,30 +206,22 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			}
 		});
 
-		// Wire camera hardware button
-		broadcastReceiver = new BroadcastReceiver() {
+		// Wire waypoint button
+		btnWaypoint.setOnClickListener(new OnClickListener() {
 			@Override
-			public void onReceive(Context context, Intent intent) {
-				if (foreground) {
-					abortBroadcast();
-					handler.post(CameraButtonTask);
-				}
+			public void onClick(View v) {
+				waypoint = true;
+				update();
 			}
-		};
-		IntentFilter cameraButtonFilter = new IntentFilter(Intent.ACTION_CAMERA_BUTTON);
-		registerReceiver(broadcastReceiver, cameraButtonFilter);
-	}
+		});
 
-	@Override
-	protected void onPause() {
-		foreground = false;
-		super.onPause();
-	}
-
-	@Override
-	protected void onResume() {
-		foreground = true;
-		super.onResume();
+		// Wire geocode button
+		btnGeocode.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				geocode();
+			}
+		});
 	}
 
 	// Wire options menu
@@ -239,25 +232,10 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		return true;
 	}
 
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		MenuItem menuItemGeocode = menu.findItem(R.id.menuGeocode);
-		NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-		menuItemGeocode.setEnabled(activeNetwork != null && activeNetwork.getState() == NetworkInfo.State.CONNECTED);
-		return true;
-	}
-
 	// Handle option selection
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.menuWaypoint:
-			waypoint = true;
-			update();
-			return true;
-		case R.id.menuGeocode:
-			geocode();
-			return true;
 		case R.id.menuEdit:
 			editWaypoint();
 			return true;
@@ -303,14 +281,6 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		if (key.equals(PREF_TRACKNAME))
 			updateTrack();
 	}
-
-	// Handle camera button
-	final Runnable CameraButtonTask = new Runnable() {
-		public void run() {
-			waypoint = true;
-			update();
-		}
-	};
 
 	// Helper upload
 	final Runnable UploadTask = new Runnable() {
@@ -644,8 +614,8 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 				if (data != null)
 					msg.setData(data);
 				serviceMessenger.send(msg);
-			} catch (Exception e) {
-				e.printStackTrace();
+			} catch (Exception ex) {
+				Toast.makeText(BackPackTrack.this, ex.toString(), Toast.LENGTH_LONG).show();
 			}
 		}
 	}

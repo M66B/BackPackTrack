@@ -92,13 +92,22 @@
 			android:layout_height="wrap_content">
 			<Button android:enabled="true" android:text="@string/Start"
 				android:layout_width="wrap_content" android:layout_height="wrap_content"
-				android:id="@+id/btnStart" android:width="75dip" />
+				android:id="@+id/btnStart" android:width="90dip" />
 			<Button android:enabled="false" android:text="@string/Stop"
 				android:layout_width="wrap_content" android:layout_height="wrap_content"
-				android:id="@+id/btnStop" android:width="75dip" />
+				android:id="@+id/btnStop" android:width="90dip" />
 			<Button android:enabled="false" android:text="@string/Update"
 				android:layout_width="wrap_content" android:layout_height="wrap_content"
-				android:id="@+id/btnUpdate" android:width="75dip" />
+				android:id="@+id/btnUpdate" android:width="90dip" />
+		</TableRow>
+		<TableRow android:id="@+id/tableRow22" android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+			<Button android:enabled="true" android:text="@string/Waypoint"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:id="@+id/btnWaypoint" android:width="90dip" />
+			<Button android:enabled="true" android:text="@string/Geocode"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:id="@+id/btnGeocode" android:width="90dip" />
 			<ImageView android:src="@drawable/icon"
 				android:layout_width="wrap_content" android:layout_height="wrap_content"
 				android:id="@+id/iconActivity"></ImageView>
