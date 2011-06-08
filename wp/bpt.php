@@ -57,7 +57,7 @@ function bpt_upload($args) {
 			$upload_dir = wp_upload_dir();
 			// Create new draft post
 			$post_data = array(
-				'post_title' => $name,
+				'post_title' => basename($name, '.gpx'),
 				'post_content' => '<a href="' . $upload_dir['url'] . '/' . $name . '">' . $name . '</a>',
 				'post_status' => 'draft',
 				'post_author' => $user_ID
