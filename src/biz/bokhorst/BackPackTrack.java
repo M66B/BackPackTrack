@@ -53,16 +53,14 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	public static final int MSG_LOCATION = 4;
 	public static final int MSG_UPDATETRACK = 5;
 
-	// Preferences
-
-	private static final SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
 	// Helpers
 	private ConnectivityManager connectivityManager = null;
 	private DatabaseHelper databaseHelper = null;
 	private SharedPreferences preferences = null;
 	private Handler handler = null;
+	private static final SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+	// Incoming messages handler
 	private class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
@@ -92,6 +90,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		}
 	}
 
+	// Client/server connection
 	private ServiceConnection serviceConnection = null;
 	private Messenger serviceMessenger = null;
 	private Messenger clientMessenger = new Messenger(new IncomingHandler());
@@ -131,6 +130,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		preferences.registerOnSharedPreferenceChangeListener(this);
 		handler = new Handler();
 
+		// Service connection
 		serviceConnection = new ServiceConnection() {
 			public void onServiceConnected(ComponentName className, IBinder service) {
 				serviceMessenger = new Messenger(service);
@@ -147,16 +147,13 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		txtStatus = (TextView) findViewById(R.id.txtStatus);
 		txtStage = (TextView) findViewById(R.id.txtStage);
 		txtSatellites = (TextView) findViewById(R.id.txtSatellites);
-
 		txtLatitude = (TextView) findViewById(R.id.txtLatitude);
 		txtLongitude = (TextView) findViewById(R.id.txtLongitude);
 		txtAltitude = (TextView) findViewById(R.id.txtAltitude);
 		txtSpeed = (TextView) findViewById(R.id.txtSpeed);
 		txtAccuracy = (TextView) findViewById(R.id.txtAccuracy);
 		txtTime = (TextView) findViewById(R.id.txtTime);
-
 		txtTrackName = (TextView) findViewById(R.id.txtTrackName);
-
 		btnStart = (Button) findViewById(R.id.btnStart);
 		btnStop = (Button) findViewById(R.id.btnStop);
 		btnUpdate = (Button) findViewById(R.id.btnUpdate);
@@ -273,6 +270,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		}
 	};
 
+	// Helper start tracking
 	private void start() {
 		if (!started) {
 			started = true;
@@ -285,6 +283,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		}
 	}
 
+	// Help stop tracking
 	private void stop() {
 		if (started) {
 			started = false;
@@ -296,6 +295,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		}
 	}
 
+	// Helper restart tracking
 	private void update() {
 		stop();
 		start();
@@ -304,8 +304,8 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	// Helper update track
 	private void updateTrack() {
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
-		String msg = String.format("%s (%d/%d)", trackName, databaseHelper.count(trackName, true), databaseHelper
-				.count(trackName, false));
+		String msg = String.format("%s (%d/%d)", trackName, databaseHelper.countPoints(trackName, true), databaseHelper
+				.countPoints(trackName, false));
 		txtTrackName.setText(msg);
 	}
 
@@ -329,15 +329,16 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		}
 	}
 
+	// Helper make waypoint
 	private void makeWaypoint(Location location, String name) {
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
-		databaseHelper.insert(trackName, null, location, name, true);
+		databaseHelper.insertPoint(trackName, null, location, name, true);
 		updateTrack();
 		String msg = String.format(getString(R.string.WaypointAdded), name);
 		Toast.makeText(BackPackTrack.this, msg, Toast.LENGTH_LONG).show();
 	}
 
-	// Helper method geocode
+	// Helper geocode
 	private void geocode() {
 		final EditText editText = new EditText(this);
 		AlertDialog.Builder b = new AlertDialog.Builder(BackPackTrack.this);
@@ -387,6 +388,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		b.show();
 	}
 
+	// Helper get address list
 	private CharSequence[] getAddresses(final List<Address> lstAddress) {
 		final CharSequence[] address = new CharSequence[lstAddress.size()];
 		for (int i = 0; i < lstAddress.size(); i++) {
@@ -413,7 +415,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		final List<Long> lstId = new ArrayList<Long>();
 		final List<String> lstName = new ArrayList<String>();
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
-		Cursor c = databaseHelper.getList(trackName, true);
+		Cursor c = databaseHelper.getPointList(trackName, true);
 		c.moveToNext();
 		while (!c.isAfterLast()) {
 			lstId.add(c.getLong(c.getColumnIndex("ID")));
@@ -435,11 +437,16 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 				final List<CharSequence> lstActions = new ArrayList<CharSequence>();
 				lstActions.add(getString(R.string.Rename));
 				NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+
+				// Geocoding needs network
 				if (activeNetwork != null && activeNetwork.getState() == NetworkInfo.State.CONNECTED)
 					lstActions.add(getString(R.string.Address));
+
 				lstActions.add(getString(R.string.Delete));
+
 				a.setItems((CharSequence[]) lstActions.toArray(new CharSequence[0]),
 						new DialogInterface.OnClickListener() {
+							// Handle selected action
 							public void onClick(DialogInterface dialog, int action) {
 								if (lstActions.get(action).equals(getString(R.string.Rename)))
 									renameWaypoint(lstId.get(item), lstName.get(item));
@@ -465,7 +472,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		b.setView(editText).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
 				String newName = editText.getText().toString();
-				databaseHelper.rename(id, newName);
+				databaseHelper.renameWaypoint(id, newName);
 				String msg = String.format(getString(R.string.WaypointRenamed), name, newName);
 				Toast.makeText(BackPackTrack.this, msg, Toast.LENGTH_LONG).show();
 			}
@@ -493,7 +500,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 				public void onClick(DialogInterface dialog, int item) {
 					if (lstAddress.get(item).hasLatitude() && lstAddress.get(item).hasLongitude()) {
 						String newName = (String) address[item];
-						databaseHelper.rename(id, newName);
+						databaseHelper.renameWaypoint(id, newName);
 						String msg = String.format(getString(R.string.WaypointRenamed), name, newName);
 						Toast.makeText(BackPackTrack.this, msg, Toast.LENGTH_LONG).show();
 					} else
@@ -514,7 +521,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		b.setMessage(String.format(getString(R.string.DeleteWaypoint), name));
 		b.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
-				databaseHelper.delete(id);
+				databaseHelper.deletePoint(id);
 				updateTrack();
 				String msg = String.format(getString(R.string.WaypointDeleted), name);
 				Toast.makeText(BackPackTrack.this, msg, Toast.LENGTH_LONG).show();
@@ -534,7 +541,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		b.setMessage(String.format(getString(R.string.ClearTrack), trackName));
 		b.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
-				databaseHelper.clear(trackName);
+				databaseHelper.clearTrack(trackName);
 				updateTrack();
 				String msg = String.format(getString(R.string.TrackCleared), trackName);
 				Toast.makeText(BackPackTrack.this, msg, Toast.LENGTH_LONG).show();
@@ -551,8 +558,8 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			// Write GPX file
 			String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 			String gpxFileName = Environment.getExternalStorageDirectory() + "/" + trackName + ".gpx";
-			Cursor cWpt = databaseHelper.getList(trackName, true);
-			Cursor cTP = databaseHelper.getList(trackName, false);
+			Cursor cWpt = databaseHelper.getPointList(trackName, true);
+			Cursor cTP = databaseHelper.getPointList(trackName, false);
 			GPXFileWriter.writeGpxFile(trackName, cTP, cWpt, new File(gpxFileName));
 
 			// Get GPX file content
@@ -591,6 +598,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		}
 	}
 
+	// Helper send message to service
 	private void sendMessage(int type, Bundle data) {
 		if (serviceMessenger != null) {
 			try {

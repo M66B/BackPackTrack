@@ -53,6 +53,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 	protected void onHandleIntent(Intent intent) {
 	}
 
+	// Handle incoming messages
 	private class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
@@ -154,6 +155,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 					handler.post(LocationWaitTask);
 				}
 			} else {
+				// Start waiting for accurate location
 				fixwait = true;
 				bestLocation = location;
 				long wait = Integer.parseInt(preferences.getString(Preferences.PREF_MAXWAIT,
@@ -165,6 +167,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 			}
 		}
 
+		// Always update location
 		sendLocation(location);
 	}
 
@@ -212,7 +215,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 	// Helper method create track point
 	protected void makeTrackpoint(Location location) {
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
-		databaseHelper.insert(trackName, null, location, null, false);
+		databaseHelper.insertPoint(trackName, null, location, null, false);
 		sendMessage(BackPackTrack.MSG_UPDATETRACK, null);
 		Toast.makeText(this, getString(R.string.TrackpointAdded), Toast.LENGTH_LONG).show();
 	}
@@ -220,24 +223,27 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 	// Helper create way point
 	private void makeWaypoint(Location location) {
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
-		int count = databaseHelper.count(trackName, true);
+		int count = databaseHelper.countPoints(trackName, true);
 		String name = String.format("%03d", count + 1);
-		databaseHelper.insert(trackName, null, location, name, true);
+		databaseHelper.insertPoint(trackName, null, location, name, true);
 		sendMessage(BackPackTrack.MSG_UPDATETRACK, null);
 		String msg = String.format(getString(R.string.WaypointAdded), name);
 		Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
 	}
 
+	// GPS disabled
 	@Override
 	public void onProviderDisabled(String arg0) {
 		sendStatus(getString(R.string.Off));
 	}
 
+	// GPS enabled
 	@Override
 	public void onProviderEnabled(String s) {
 		sendStatus(getString(R.string.On));
 	}
 
+	// GPS status changed
 	@Override
 	public void onStatusChanged(String s, int i, Bundle b) {
 		if (i == LocationProvider.OUT_OF_SERVICE)
@@ -250,6 +256,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 			sendStatus(String.format("Status %d", i));
 	}
 
+	// GPS status changed
 	@Override
 	public void onGpsStatusChanged(int event) {
 		if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
@@ -280,19 +287,21 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 		}
 	}
 
-	void sendStage(String stage) {
+	// And a few helpers to simplify the above logic ;-)
+
+	private void sendStage(String stage) {
 		Bundle b = new Bundle();
 		b.putString("Stage", stage);
 		sendMessage(BackPackTrack.MSG_STAGE, b);
 	}
 
-	void sendStatus(String status) {
+	private void sendStatus(String status) {
 		Bundle b = new Bundle();
 		b.putString("Status", status);
 		sendMessage(BackPackTrack.MSG_STATUS, b);
 	}
 
-	void sendSatellites(int fix, int count) {
+	private void sendSatellites(int fix, int count) {
 		Bundle b = new Bundle();
 		b.putInt("Fix", fix);
 		b.putInt("Count", count);
@@ -310,7 +319,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 		sendMessage(BackPackTrack.MSG_LOCATION, b);
 	}
 
-	void sendMessage(int type, Bundle data) {
+	private void sendMessage(int type, Bundle data) {
 		if (clientMessenger != null) {
 			try {
 				Message msg = Message.obtain();

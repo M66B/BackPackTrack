@@ -48,12 +48,12 @@ public class BPTMap extends MapActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		// Get correct api key
 		boolean debug = false;
 		try {
 			debug = isDebugBuild();
 		} catch (Exception e) {
 		}
-
 		String apikey = debug ? getString(R.string.mvApikeyDebug) : getString(R.string.mvApikeyRelease);
 
 		// Create map view
@@ -77,7 +77,6 @@ public class BPTMap extends MapActivity {
 		preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
 		// Get view
-		// mapView = (MapView) findViewById(R.id.mapview);
 		mapView.setBuiltInZoomControls(true);
 		mapView.setSatellite(satellite);
 		mapView.setStreetView(streetview);
@@ -87,7 +86,7 @@ public class BPTMap extends MapActivity {
 		double minLat = Double.MAX_VALUE, maxLat = Double.MIN_VALUE;
 		double minLon = Double.MAX_VALUE, maxLon = Double.MIN_VALUE;
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
-		Cursor c = databaseHelper.getList(trackName, true);
+		Cursor c = databaseHelper.getPointList(trackName, true);
 		c.moveToNext();
 		while (!c.isAfterLast()) {
 			double lat = c.getDouble(c.getColumnIndex("LATITUDE"));
@@ -124,6 +123,7 @@ public class BPTMap extends MapActivity {
 		mapView.invalidate();
 	}
 
+	// Helper check debug version
 	public boolean isDebugBuild() throws Exception {
 		Context context = getApplicationContext();
 		PackageManager pm = context.getPackageManager();
@@ -166,16 +166,18 @@ public class BPTMap extends MapActivity {
 		}
 	}
 
+	// Helper class track / waypoint overlay
 	class MapOverlay extends com.google.android.maps.Overlay {
 
 		@Override
 		public boolean draw(Canvas canvas, MapView mapView, boolean shadow, long when) {
 			super.draw(canvas, mapView, shadow);
 
+			// Get current tags
 			String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 
 			// Draw waypoints
-			Cursor cTP = databaseHelper.getList(trackName, true);
+			Cursor cTP = databaseHelper.getPointList(trackName, true);
 			cTP.moveToNext();
 			while (!cTP.isAfterLast()) {
 				GeoPoint p = new GeoPoint((int) (cTP.getDouble(cTP.getColumnIndex("LATITUDE")) * 1E6), (int) (cTP
@@ -200,7 +202,7 @@ public class BPTMap extends MapActivity {
 			mPaint.setStrokeWidth(3);
 
 			GeoPoint prev = null;
-			Cursor cWpt = databaseHelper.getList(trackName, false);
+			Cursor cWpt = databaseHelper.getPointList(trackName, false);
 			cWpt.moveToNext();
 			while (!cWpt.isAfterLast()) {
 				GeoPoint p = new GeoPoint((int) (cWpt.getDouble(cWpt.getColumnIndex("LATITUDE")) * 1E6), (int) (cWpt

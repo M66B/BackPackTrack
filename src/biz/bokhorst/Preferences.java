@@ -12,6 +12,7 @@ import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceChangeListener;
 
 public class Preferences extends PreferenceActivity {
+	// Constants
 	public static final String PREF_BLOGURL = "BlogURL";
 	public static final String PREF_BLOGID = "BlogID";
 	public static final String PREF_BLOGUSER = "BlogUser";
@@ -73,7 +74,7 @@ public class Preferences extends PreferenceActivity {
 	private void setTrackNameList(ListPreference lp) {
 		DatabaseHelper databaseHelper = new DatabaseHelper(this);
 		final List<String> lstName = new ArrayList<String>();
-		Cursor c = databaseHelper.getTrackNames();
+		Cursor c = databaseHelper.getTrackList();
 		c.moveToNext();
 		while (!c.isAfterLast()) {
 			lstName.add(c.getString(c.getColumnIndex("TRACK")));
