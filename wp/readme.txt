@@ -28,9 +28,6 @@ The Android application is designed for low power and offline use.
 If you want to continuously track your position, you can better use [My Tracks](http://mytracks.appspot.com/ "My Tracks"),
 although this application doesn't have an option to upload GPX files to your weblog.
 
-http://wordpress.org/extend/plugins/backpacktrack-for-android/
-http://m66b-bpt.appspot.com/
-
 == Installation ==
 
 *Using the WordPress dashboard*
@@ -88,5 +85,6 @@ Development version
 
 == Acknowledgements ==
 
-http://commons.wikimedia.org/wiki/File:Map_symbol-pin.svg
-http://commons.wikimedia.org/wiki/File:Exquisite-backpack.svg
+* The application icon was taken from [Wikimedia Commons](http://commons.wikimedia.org/wiki/File:Map_symbol-pin.svg "Map symbol")
+* The marker pin icon was taken from [Wikimedia Commons](http://commons.wikimedia.org/wiki/File:Exquisite-backpack.svg "Marker pin")
+* The [xmlrpc client side library for Android](http://code.google.com/p/android-xmlrpc/ "xmlrpc for Android") is used
