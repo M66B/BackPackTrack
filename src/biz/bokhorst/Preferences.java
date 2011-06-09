@@ -12,6 +12,29 @@ import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceChangeListener;
 
 public class Preferences extends PreferenceActivity {
+	public static final String PREF_BLOGURL = "BlogURL";
+	public static final String PREF_BLOGID = "BlogID";
+	public static final String PREF_BLOGUSER = "BlogUser";
+	public static final String PREF_BLOGPWD = "BlogPwd";
+
+	public static final String PREF_BLOGURL_DEFAULT = "";
+	public static final String PREF_BLOGID_DEFAULT = "1";
+	public static final String PREF_BLOGUSER_DEFAULT = "";
+	public static final String PREF_BLOGPWD_DEFAULT = "";
+
+	public static final String PREF_TRACKNAME = "TrackName";
+	public static final String PREF_TRACKINTERVAL = "TrackInterval";
+	public static final String PREF_FIXTIMEOUT = "FixTimeout";
+	public static final String PREF_MAXWAIT = "MaxWait";
+	public static final String PREF_MINACCURACY = "MinAccuracy";
+	public static final String PREF_GEOCODECOUNT = "GeocodeCount";
+
+	public static final String PREF_TRACKNAME_DEFAULT = "Journey";
+	public static final String PREF_TRACKINTERVAL_DEFAULT = "30";
+	public static final String PREF_FIXTIMEOUT_DEFAULT = "300";
+	public static final String PREF_MAXWAIT_DEFAULT = "60";
+	public static final String PREF_MINACCURACY_DEFAULT = "20";
+	public static final String PREF_GEOCODECOUNT_DEFAULT = "5";
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

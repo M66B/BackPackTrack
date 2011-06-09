@@ -31,9 +31,6 @@ import com.google.android.maps.Overlay;
 
 // http://developer.android.com/resources/tutorials/views/hello-mapview.html
 public class BPTMap extends MapActivity {
-	// Preferences
-	private static final String PREF_TRACKNAME = "TrackName";
-	private static final String PREF_TRACKNAME_DEFAULT = "Journey";
 
 	private boolean satellite = false;
 	private boolean streetview = false;
@@ -89,7 +86,7 @@ public class BPTMap extends MapActivity {
 		// Get map bounds
 		double minLat = Double.MAX_VALUE, maxLat = Double.MIN_VALUE;
 		double minLon = Double.MAX_VALUE, maxLon = Double.MIN_VALUE;
-		String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 		Cursor c = databaseHelper.getList(trackName, true);
 		c.moveToNext();
 		while (!c.isAfterLast()) {
@@ -175,7 +172,7 @@ public class BPTMap extends MapActivity {
 		public boolean draw(Canvas canvas, MapView mapView, boolean shadow, long when) {
 			super.draw(canvas, mapView, shadow);
 
-			String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
+			String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 
 			// Draw waypoints
 			Cursor cTP = databaseHelper.getList(trackName, true);

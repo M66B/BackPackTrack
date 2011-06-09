@@ -54,21 +54,6 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	public static final int MSG_UPDATETRACK = 5;
 
 	// Preferences
-	private static final String PREF_BLOGURL = "BlogURL";
-	private static final String PREF_BLOGID = "BlogID";
-	private static final String PREF_BLOGUSER = "BlogUser";
-	private static final String PREF_BLOGPWD = "BlogPwd";
-
-	private static final String PREF_BLOGURL_DEFAULT = "";
-	private static final String PREF_BLOGID_DEFAULT = "1";
-	private static final String PREF_BLOGUSER_DEFAULT = "";
-	private static final String PREF_BLOGPWD_DEFAULT = "";
-
-	private static final String PREF_TRACKNAME = "TrackName";
-	private static final String PREF_GEOCODECOUNT = "GeocodeCount";
-
-	private static final String PREF_TRACKNAME_DEFAULT = "Journey";
-	private static final String PREF_GEOCODECOUNT_DEFAULT = "5";
 
 	private static final SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -277,7 +262,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	// Monitor preference change
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (key.equals(PREF_TRACKNAME))
+		if (key.equals(Preferences.PREF_TRACKNAME))
 			updateTrack();
 	}
 
@@ -318,7 +303,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 
 	// Helper update track
 	private void updateTrack() {
-		String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 		String msg = String.format("%s (%d/%d)", trackName, databaseHelper.count(trackName, true), databaseHelper
 				.count(trackName, false));
 		txtTrackName.setText(msg);
@@ -345,7 +330,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	}
 
 	private void makeWaypoint(Location location, String name) {
-		String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 		databaseHelper.insert(trackName, null, location, name, true);
 		updateTrack();
 		String msg = String.format(getString(R.string.WaypointAdded), name);
@@ -365,8 +350,8 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 					try {
 						// Geocode
 						Geocoder geocoder = new Geocoder(BackPackTrack.this);
-						int count = Integer.parseInt(preferences
-								.getString(PREF_GEOCODECOUNT, PREF_GEOCODECOUNT_DEFAULT));
+						int count = Integer.parseInt(preferences.getString(Preferences.PREF_GEOCODECOUNT,
+								Preferences.PREF_GEOCODECOUNT_DEFAULT));
 						final List<Address> lstAddress = geocoder.getFromLocationName(name, count, -90, -180, 90, 180);
 						final CharSequence[] address = getAddresses(lstAddress);
 
@@ -427,7 +412,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		// Get name list
 		final List<Long> lstId = new ArrayList<Long>();
 		final List<String> lstName = new ArrayList<String>();
-		String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 		Cursor c = databaseHelper.getList(trackName, true);
 		c.moveToNext();
 		while (!c.isAfterLast()) {
@@ -495,7 +480,8 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			// Reverse geocode
 			Location location = databaseHelper.getLocation(id);
 			Geocoder geocoder = new Geocoder(BackPackTrack.this);
-			int count = Integer.parseInt(preferences.getString(PREF_GEOCODECOUNT, PREF_GEOCODECOUNT_DEFAULT));
+			int count = Integer.parseInt(preferences.getString(Preferences.PREF_GEOCODECOUNT,
+					Preferences.PREF_GEOCODECOUNT_DEFAULT));
 			final List<Address> lstAddress = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(),
 					count);
 			final CharSequence[] address = getAddresses(lstAddress);
@@ -540,7 +526,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 
 	// Helper clear track
 	private void clearTrack() {
-		final String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
+		final String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 
 		AlertDialog.Builder b = new AlertDialog.Builder(BackPackTrack.this);
 		b.setIcon(android.R.drawable.ic_dialog_alert);
@@ -563,7 +549,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 	private void upload() {
 		try {
 			// Write GPX file
-			String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
+			String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 			String gpxFileName = Environment.getExternalStorageDirectory() + "/" + trackName + ".gpx";
 			Cursor cWpt = databaseHelper.getList(trackName, true);
 			Cursor cTP = databaseHelper.getList(trackName, false);
@@ -577,10 +563,11 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			in.close();
 
 			// Create XML-RPC client
-			String blogUrl = preferences.getString(PREF_BLOGURL, PREF_BLOGURL_DEFAULT);
-			int blogId = Integer.parseInt(preferences.getString(PREF_BLOGID, PREF_BLOGID_DEFAULT));
-			String userName = preferences.getString(PREF_BLOGUSER, PREF_BLOGUSER_DEFAULT);
-			String passWord = preferences.getString(PREF_BLOGPWD, PREF_BLOGPWD_DEFAULT);
+			String blogUrl = preferences.getString(Preferences.PREF_BLOGURL, Preferences.PREF_BLOGURL_DEFAULT);
+			int blogId = Integer.parseInt(preferences.getString(Preferences.PREF_BLOGID,
+					Preferences.PREF_BLOGID_DEFAULT));
+			String userName = preferences.getString(Preferences.PREF_BLOGUSER, Preferences.PREF_BLOGUSER_DEFAULT);
+			String passWord = preferences.getString(Preferences.PREF_BLOGPWD, Preferences.PREF_BLOGPWD_DEFAULT);
 			URI uri = URI.create(blogUrl + "xmlrpc.php");
 			XMLRPCClient xmlrpc = new XMLRPCClient(uri, userName, passWord);
 

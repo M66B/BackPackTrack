@@ -29,19 +29,6 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 	public static final int MSG_REPLY = 1;
 	public static final int MSG_WAYPOINT = 2;
 
-	// Preferences
-	private static final String PREF_TRACKNAME = "TrackName";
-	private static final String PREF_TRACKINTERVAL = "TrackInterval";
-	private static final String PREF_FIXTIMEOUT = "FixTimeout";
-	private static final String PREF_MAXWAIT = "MaxWait";
-	private static final String PREF_MINACCURACY = "MinAccuracy";
-
-	private static final String PREF_TRACKNAME_DEFAULT = "Journey";
-	private static final String PREF_TRACKINTERVAL_DEFAULT = "30";
-	private static final String PREF_FIXTIMEOUT_DEFAULT = "300";
-	private static final String PREF_MAXWAIT_DEFAULT = "60";
-	private static final String PREF_MINACCURACY_DEFAULT = "20";
-
 	private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("HH:mm:ss");
 
 	// Helpers
@@ -118,7 +105,8 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 		if (!locating) {
 			locating = true;
 			fixwait = false;
-			long timeout = Integer.parseInt(preferences.getString(PREF_FIXTIMEOUT, PREF_FIXTIMEOUT_DEFAULT)) * 1000L;
+			long timeout = Integer.parseInt(preferences.getString(Preferences.PREF_FIXTIMEOUT,
+					Preferences.PREF_FIXTIMEOUT_DEFAULT)) * 1000L;
 			handler.postDelayed(FixTimeoutTask, timeout);
 
 			// Request updates
@@ -153,7 +141,8 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 	public void onLocationChanged(Location location) {
 		if (locating) {
 			handler.removeCallbacks(FixTimeoutTask);
-			int minAccuracy = Integer.parseInt(preferences.getString(PREF_MINACCURACY, PREF_MINACCURACY_DEFAULT));
+			int minAccuracy = Integer.parseInt(preferences.getString(Preferences.PREF_MINACCURACY,
+					Preferences.PREF_MINACCURACY_DEFAULT));
 			if (fixwait) {
 				// Record best location
 				if (location.getAccuracy() <= bestLocation.getAccuracy())
@@ -167,7 +156,8 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 			} else {
 				fixwait = true;
 				bestLocation = location;
-				long wait = Integer.parseInt(preferences.getString(PREF_MAXWAIT, PREF_MAXWAIT_DEFAULT)) * 1000L;
+				long wait = Integer.parseInt(preferences.getString(Preferences.PREF_MAXWAIT,
+						Preferences.PREF_MAXWAIT_DEFAULT)) * 1000L;
 				handler.postDelayed(LocationWaitTask, wait);
 				Date waitTime = new Date(System.currentTimeMillis() + wait);
 				sendStage(String.format(getString(R.string.StageTrackWait), TIME_FORMATTER.format(waitTime),
@@ -182,7 +172,8 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 	final Runnable TrackTask = new Runnable() {
 		public void run() {
 			startLocating();
-			long interval = Integer.parseInt(preferences.getString(PREF_TRACKINTERVAL, PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
+			long interval = Integer.parseInt(preferences.getString(Preferences.PREF_TRACKINTERVAL,
+					Preferences.PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
 			handler.postDelayed(TrackTask, interval);
 			nextTrackTime = new Date(System.currentTimeMillis() + interval);
 		}
@@ -210,7 +201,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 			sendStage(String.format(getString(R.string.StageFixTimeout), TIME_FORMATTER.format(nextTrackTime)));
 
 			// Use last location if younger
-			String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
+			String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 			Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 			sendLocation(location);
 			if (location != null && location.getTime() > databaseHelper.getYoungest(trackName, false))
@@ -220,7 +211,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 
 	// Helper method create track point
 	protected void makeTrackpoint(Location location) {
-		String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 		databaseHelper.insert(trackName, null, location, null, false);
 		sendMessage(BackPackTrack.MSG_UPDATETRACK, null);
 		Toast.makeText(this, getString(R.string.TrackpointAdded), Toast.LENGTH_LONG).show();
@@ -228,7 +219,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 
 	// Helper create way point
 	private void makeWaypoint(Location location) {
-		String trackName = preferences.getString(PREF_TRACKNAME, PREF_TRACKNAME_DEFAULT);
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 		int count = databaseHelper.count(trackName, true);
 		String name = String.format("%03d", count + 1);
 		databaseHelper.insert(trackName, null, location, name, true);
