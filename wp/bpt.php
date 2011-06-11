@@ -123,9 +123,9 @@ function bpt_upload($args) {
 }
 
 function bpt_action_links($links, $file) {
-	if ($file == __FILE__) {
+	if ($file == plugin_basename(__FILE__)) {
 		$url = 'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AJSBB7DGNA3MJ&lc=US&item_name=BackPackTrack%20for%20Android&item_number=Marcel%20Bokhorst&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted';
-		$links[] = '<a href="' . $url . '">Donate</a>';
+		$links[] = '<a href="' . $url . '" target="_blank">Donate</a>';
 	}
 	return $links;
 }
