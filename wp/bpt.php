@@ -27,6 +27,7 @@ Author URI: http://blog.bokhorst.biz/about/
 */
 
 add_filter('xmlrpc_methods', 'bpt_xmlrpc_methods');
+add_filter('plugin_action_links', 'bpt_action_links', 10, 2);
 
 function bpt_xmlrpc_methods($methods) {
 	$methods['bpt.upload'] = 'bpt_upload';
@@ -119,6 +120,14 @@ function bpt_upload($args) {
 		logIO('O', 'bpt.upload exception' . $e->getMessage());
 		return new IXR_Error(500, $e->getMessage());
 	}
+}
+
+function bpt_action_links($links, $file) {
+	if ($file == __FILE__) {
+		$url = 'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AJSBB7DGNA3MJ&lc=US&item_name=BackPackTrack%20for%20Android&item_number=Marcel%20Bokhorst&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted';
+		$links[] = '<a href="' . $url . '">Donate</a>';
+	}
+	return $links;
 }
 
 ?>
