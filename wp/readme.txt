@@ -6,15 +6,15 @@ Requires at least: 3.1
 Tested up to: 3.2
 Stable tag: 0.0
 
-Plugin and open source Android application to track and display your journeys
+WordPress plugin and open source Android application to track and display your journeys
 
 == Description ==
 
-The plugin extends the [WordPress XML-RPC](http://codex.wordpress.org/XML-RPC_Support "WordPress XML-RPC") protocol
+The WordPress plugin extends the [WordPress XML-RPC](http://codex.wordpress.org/XML-RPC_Support "WordPress XML-RPC") protocol
 to enable the belonging Android application to create posts and
 to attach and update [GPX](http://www.topografix.com/gpx.asp "GPX") files.
 
-The Android application will periodically turn on the GPS of your device and acquire and record your position.
+The [Android application](https://github.com/M66B/BackPackTrack "BackPackTrack for Android") will periodically turn on the GPS of your device and acquire and record your position.
 You can make waypoints on important locations,
 which you can optionally [reverse geocode](http://en.wikipedia.org/wiki/Reverse_geocoding "reverse geocode") when you have an internet connection.
 
