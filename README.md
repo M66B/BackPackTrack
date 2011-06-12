@@ -1,7 +1,7 @@
 BackPackTrack for Android
 =========================
 
-WordPress plugin and open source Android application to track and display your journeys
+[WordPress plugin](http://wordpress.org/extend/plugins/backpacktrack-for-android/ "BackPackTrack for Android") and open source Android application to track and display your journeys
 
 Description
 -----------
