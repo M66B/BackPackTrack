@@ -17,6 +17,7 @@ to attach and update [GPX](http://www.topografix.com/gpx.asp "GPX") files.
 The [Android application](https://github.com/M66B/BackPackTrack "BackPackTrack for Android") will periodically turn on the GPS of your device and acquire and record your position.
 You can make waypoints on important locations,
 which you can optionally [reverse geocode](http://en.wikipedia.org/wiki/Reverse_geocoding "reverse geocode") when you have an internet connection.
+Android 2.1 or higher is required.
 
 During or after your journey, you can create and upload a GPX file to your WordPress weblog.
 The first upload creates a *draft* post with the title of your journey and a hyperlink to the generated GPX file.

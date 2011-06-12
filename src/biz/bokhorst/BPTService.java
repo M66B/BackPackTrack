@@ -100,6 +100,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 		notification.setLatestEventInfo(context, getText(R.string.app_name), getText(R.string.Running), intentBack);
 
 		// Start foreground service
+		// Requires API level 5 (Android 2.0)
 		startForeground(1, notification);
 
 		// Instantiate helpers
