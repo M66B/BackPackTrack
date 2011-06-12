@@ -50,8 +50,8 @@ although this application doesn't have an option to upload GPX files to your web
 *Next steps*
 
 1. Enable XML-RPC (WordPress menu > Settings > Writing > Remote Publishing > XML-RPC > Check and Save Changes)
-1. Install and setup [Android application](https://github.com/M66B/BackPackTrack "Android application")
-1. Install and setup [XML Google Maps](http://wordpress.org/extend/plugins/xml-google-maps/ "XML Google Maps")
+1. Install and setup the [Android application](https://github.com/M66B/BackPackTrack "Android application")
+1. Install and setup the [XML Google Maps](http://wordpress.org/extend/plugins/xml-google-maps/ "XML Google Maps") plugin
 
 To setup the Android application you should fill in your weblog address (URL) with trailing slash
 and your user name and password using the options of the application.
@@ -98,4 +98,4 @@ Development version
 
 * The application icon was taken from [Wikimedia Commons](http://commons.wikimedia.org/wiki/File:Map_symbol-pin.svg "Map symbol")
 * The marker pin icon was taken from [Wikimedia Commons](http://commons.wikimedia.org/wiki/File:Exquisite-backpack.svg "Marker pin")
-* The [xmlrpc client side library for Android](http://code.google.com/p/android-xmlrpc/ "xmlrpc for Android") is used
+* The [XML-RPC client side library for Android](http://code.google.com/p/android-xmlrpc/ "XML-RPC for Android") is used
