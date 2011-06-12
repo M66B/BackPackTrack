@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AJSBB
 Tags: android, gpx, post, posts, maps, google, google maps, routes, tracks, geocode, geotag
 Requires at least: 3.1
 Tested up to: 3.2
-Stable tag: 0.0
+Stable tag: 0.1
 
 WordPress plugin and open source Android application to track and display your journeys
 
@@ -69,6 +69,10 @@ Other application options:
 = Why does the time of the locations differ from the clock time? =
 
 Because the clock time of your device differs from the GPS time.
+
+= What do the numbers after the track name mean? =
+
+The first number is the number of waypoints and the second number is the number of trackpoints.
 
 = Where can I ask questions, report bugs and request features? =
 
