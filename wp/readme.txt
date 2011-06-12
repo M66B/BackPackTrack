@@ -65,13 +65,17 @@ Other application options:
 
 == Frequently Asked Questions ==
 
+= Why does the time of the locations differ from the clock time? =
+
+Because the clock time of your device differs from the GPS time.
+
 = Where can I ask questions, report bugs and request features? =
 
 You can open a topic in the [support forum](http://forum.bokhorst.biz/backpacktrack-for-android/ "support forum").
 
 == Screenshots ==
 
-1. screenshot-1.(png|jpg|jpeg|gif)
+1. BackPackTrack for Android
 
 == Changelog ==
 
