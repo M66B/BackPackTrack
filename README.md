@@ -28,6 +28,7 @@ The Android application is designed for low power and offline use.
 If you want to continuously track your position, you can better use [My Tracks](http://mytracks.appspot.com/ "My Tracks"),
 although this application doesn't have an option to upload GPX files to your weblog.
 
+
 Installation
 ------------
 
@@ -50,8 +51,8 @@ Installation
 *Next steps*
 
 1. Enable XML-RPC (WordPress menu > Settings > Writing > Remote Publishing > XML-RPC > Check and Save Changes)
-1. Install and setup [Android application](http:// "Android application")
-1. Install and setup [XML Google Maps](http://wordpress.org/extend/plugins/xml-google-maps/ "XML Google Maps")
+1. Install and setup the [Android application](https://github.com/M66B/BackPackTrack "Android application")
+1. Install and setup the [XML Google Maps](http://wordpress.org/extend/plugins/xml-google-maps/ "XML Google Maps") plugin
 
 To setup the Android application you should fill in your weblog address (URL) with trailing slash
 and your user name and password using the options of the application.
@@ -67,9 +68,22 @@ Other application options:
 Frequently Asked Questions
 --------------------------
 
+*Why did you create this plugin and application?*
+
+Read [here](http://blog.bokhorst.biz/5283/computers-en-internet/backpacktrack-for-android/ "Marcel's weblog") why.
+
+*Where can I download the Android application*
+
+This is the [direct download link](https://github.com/downloads/M66B/BackPackTrack/BackPackTrack.apk "BackPackTrack for Android")
+on the [github project page](https://github.com/M66B/BackPackTrack "Android application").
+
 *Why does the time of the locations differ from the clock time?*
 
 Because the clock time of your device differs from the GPS time.
+
+*What do the numbers after the track name mean?*
+
+The first number is the number of waypoints and the second number is the number of trackpoints.
 
 *Where can I ask questions, report bugs and request features?*
 
@@ -80,4 +94,4 @@ Acknowledgements
 
 * The application icon was taken from [Wikimedia Commons](http://commons.wikimedia.org/wiki/File:Map_symbol-pin.svg "Map symbol")
 * The marker pin icon was taken from [Wikimedia Commons](http://commons.wikimedia.org/wiki/File:Exquisite-backpack.svg "Marker pin")
-* The [xmlrpc client side library for Android](http://code.google.com/p/android-xmlrpc/ "xmlrpc for Android") is used
+* The [XML-RPC client side library for Android](http://code.google.com/p/android-xmlrpc/ "XML-RPC for Android") is being used
