@@ -72,6 +72,10 @@ Other application options:
 
 == Frequently Asked Questions ==
 
+= Why did you create this plugin and application? =
+
+Read [here](http://blog.bokhorst.biz/5283/computers-en-internet/backpacktrack-for-android/ "Marcel's weblog") why.
+
 = Why does the time of the locations differ from the clock time? =
 
 Because the clock time of your device differs from the GPS time.
