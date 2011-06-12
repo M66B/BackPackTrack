@@ -29,6 +29,12 @@ The Android application is designed for low power and offline use.
 If you want to continuously track your position, you can better use [My Tracks](http://mytracks.appspot.com/ "My Tracks"),
 although this application doesn't have an option to upload GPX files to your weblog.
 
+If you find this plugin useful, please rate it accordingly.
+If you rate this plugin low, please [let me know why](http://blog.bokhorst.biz/contact/ "Marcel Bokhorst").
+Please report any issue you have with this plugin in the [support forum](http://forum.bokhorst.biz/backpacktrack-for-android/ "Marcel's weblog - forum"), so I can at least try to fix it.
+
+See [my other plugins](http://wordpress.org/extend/plugins/profile/m66b "Marcel Bokhorst").
+
 == Installation ==
 
 *Using the WordPress dashboard*
