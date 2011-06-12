@@ -76,6 +76,11 @@ Other application options:
 
 Read [here](http://blog.bokhorst.biz/5283/computers-en-internet/backpacktrack-for-android/ "Marcel's weblog") why.
 
+= Where can I download the Android application =
+
+This is the [direct download link](https://github.com/downloads/M66B/BackPackTrack/BackPackTrack.apk "BackPackTrack for Android")
+on the [github project page](https://github.com/M66B/BackPackTrack "Android application").
+
 = Why does the time of the locations differ from the clock time? =
 
 Because the clock time of your device differs from the GPS time.
