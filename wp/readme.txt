@@ -80,10 +80,16 @@ You can open a topic in the [support forum](http://forum.bokhorst.biz/backpacktr
 
 == Changelog ==
 
+= 0.1 =
+* First public release
+
 = 0.0 =
 * Development version
 
 == Upgrade Notice ==
+
+= 0.1 =
+First public release
 
 = 0.0 =
 Development version
