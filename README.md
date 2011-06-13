@@ -28,6 +28,11 @@ The Android application is designed for low power and offline use.
 If you want to continuously track your position, you can better use [My Tracks](http://mytracks.appspot.com/ "My Tracks"),
 although this application doesn't have an option to upload GPX files to your weblog.
 
+If you find this plugin useful, please rate it accordingly.
+If you rate this plugin low, please [let me know why](http://blog.bokhorst.biz/contact/ "Marcel Bokhorst").
+Please report any issue you have with this plugin [here](https://github.com/M66B/BackPackTrack/issues "github - issues"), so I can at least try to fix it.
+
+See [my other plugins](http://wordpress.org/extend/plugins/profile/m66b "Marcel Bokhorst").
 
 Installation
 ------------
@@ -87,7 +92,7 @@ The first number is the number of waypoints and the second number is the number 
 
 **Where can I ask questions, report bugs and request features?**
 
-You can open a topic in the [support forum](http://forum.bokhorst.biz/backpacktrack-for-android/ "support forum").
+You can report issues [here](https://github.com/M66B/BackPackTrack/issues "github - issues").
 
 Acknowledgements
 ----------------

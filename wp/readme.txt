@@ -31,7 +31,7 @@ although this application doesn't have an option to upload GPX files to your web
 
 If you find this plugin useful, please rate it accordingly.
 If you rate this plugin low, please [let me know why](http://blog.bokhorst.biz/contact/ "Marcel Bokhorst").
-Please report any issue you have with this plugin in the [support forum](http://forum.bokhorst.biz/backpacktrack-for-android/ "Marcel's weblog - forum"), so I can at least try to fix it.
+Please report any issue you have with this plugin [here](https://github.com/M66B/BackPackTrack/issues "github - issues"), so I can at least try to fix it.
 
 See [my other plugins](http://wordpress.org/extend/plugins/profile/m66b "Marcel Bokhorst").
 
@@ -91,7 +91,7 @@ The first number is the number of waypoints and the second number is the number 
 
 = Where can I ask questions, report bugs and request features? =
 
-You can open a topic in the [support forum](http://forum.bokhorst.biz/backpacktrack-for-android/ "support forum").
+You can report issues [here](https://github.com/M66B/BackPackTrack/issues "github - issues").
 
 == Screenshots ==
 
