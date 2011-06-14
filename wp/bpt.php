@@ -3,7 +3,7 @@
 Plugin Name: BackPackTrack
 Plugin URI: http://blog.bokhorst.biz/5283/computers-en-internet/backpacktrack-for-android/
 Description: BackPackTrack XML-RPC methods
-Version: 0.1
+Version: 0.3
 Author: Marcel Bokhorst
 Author URI: http://blog.bokhorst.biz/about/
 */
@@ -28,6 +28,7 @@ Author URI: http://blog.bokhorst.biz/about/
 
 add_filter('xmlrpc_methods', 'bpt_xmlrpc_methods');
 add_filter('plugin_action_links', 'bpt_action_links', 10, 2);
+add_filter('upload_mimes', 'bpt_upload_mimes');
 
 function bpt_xmlrpc_methods($methods) {
 	$methods['bpt.upload'] = 'bpt_upload';
@@ -120,6 +121,11 @@ function bpt_upload($args) {
 		logIO('O', 'bpt.upload exception' . $e->getMessage());
 		return new IXR_Error(500, $e->getMessage());
 	}
+}
+
+function bpt_upload_mimes($mimes) {
+	$mimes['gpx'] = 'text/xml';
+	return $mimes;
 }
 
 function bpt_action_links($links, $file) {

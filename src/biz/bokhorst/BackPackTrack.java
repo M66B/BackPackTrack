@@ -1,26 +1,27 @@
 package biz.bokhorst;
 
 /*
-	Copyright 2011 Marcel Bokhorst
+ Copyright 2011 Marcel Bokhorst
 
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or
-	(at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -237,6 +238,9 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		switch (item.getItemId()) {
 		case R.id.menuEdit:
 			editWaypoint();
+			return true;
+		case R.id.menuWriteGPX:
+			writeGPXFile();
 			return true;
 		case R.id.menuUpload:
 			updateTrack();
@@ -569,16 +573,37 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		b.show();
 	}
 
+	private void writeGPXFile() {
+		try {
+			String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
+			String gpxFileName = writeGPXFile(trackName);
+			Toast.makeText(BackPackTrack.this, String.format(getString(R.string.written), gpxFileName),
+					Toast.LENGTH_LONG).show();
+		} catch (Exception ex) {
+			Toast.makeText(BackPackTrack.this, ex.toString(), Toast.LENGTH_LONG).show();
+		}
+	}
+
+	private String writeGPXFile(String trackName) throws IOException {
+		// Write GPX file
+		String gpxFileName = null;
+		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()))
+			gpxFileName = Environment.getExternalStorageDirectory() + "/" + trackName + ".gpx";
+		else
+			gpxFileName = Environment.getDataDirectory() + "/" + trackName + ".gpx";
+		Cursor cWpt = databaseHelper.getPointList(trackName, true);
+		Cursor cTP = databaseHelper.getPointList(trackName, false);
+		GPXFileWriter.writeGpxFile(trackName, cTP, cWpt, new File(gpxFileName));
+		return gpxFileName;
+	}
+
 	// Helper upload
 	@SuppressWarnings("unchecked")
 	private void upload() {
 		try {
 			// Write GPX file
 			String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
-			String gpxFileName = Environment.getExternalStorageDirectory() + "/" + trackName + ".gpx";
-			Cursor cWpt = databaseHelper.getPointList(trackName, true);
-			Cursor cTP = databaseHelper.getPointList(trackName, false);
-			GPXFileWriter.writeGpxFile(trackName, cTP, cWpt, new File(gpxFileName));
+			String gpxFileName = writeGPXFile(trackName);
 
 			// Get GPX file content
 			File gpx = new File(gpxFileName);
@@ -610,7 +635,8 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 			// Check result
 			HashMap<Object, Object> contentHash = (HashMap<Object, Object>) result;
 			String resultURL = contentHash.get("url").toString();
-			Toast.makeText(BackPackTrack.this, resultURL, Toast.LENGTH_LONG).show();
+			Toast.makeText(BackPackTrack.this, String.format(getString(R.string.Uploaded), resultURL),
+					Toast.LENGTH_LONG).show();
 		} catch (Exception ex) {
 			Toast.makeText(BackPackTrack.this, ex.toString(), Toast.LENGTH_LONG).show();
 		}

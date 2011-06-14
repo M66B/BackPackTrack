@@ -41,7 +41,10 @@
 	<string name="Rename">Rename</string>
 	<string name="Locate">Locate</string>
 	<string name="Delete">Delete</string>
+	<string name="writeGPX">Write GPX</string>
+	<string name="written">GPX written to %s</string>
 	<string name="Upload">Upload</string>
+	<string name="Uploaded">GPX uploaded to %s</string>
 	<string name="Map">Map</string>
 	<string name="Clear">Clear</string>
 	<string name="Settings">Settings</string>
