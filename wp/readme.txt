@@ -96,6 +96,7 @@ You can report issues [here](https://github.com/M66B/BackPackTrack/issues "githu
 == Screenshots ==
 
 1. BackPackTrack for Android
+2. Quick Response code
 
 == Changelog ==
 
