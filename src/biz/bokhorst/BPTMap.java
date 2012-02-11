@@ -1,22 +1,23 @@
 package biz.bokhorst;
 
 /*
-	Copyright 2011 Marcel Bokhorst
+ Copyright 2011, 2012 Marcel Bokhorst
+ All Rights Reserved
 
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or
-	(at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 import java.util.List;
 
@@ -72,17 +73,21 @@ public class BPTMap extends MapActivity {
 			debug = isDebugBuild();
 		} catch (Exception e) {
 		}
-		String apikey = debug ? getString(R.string.mvApikeyDebug) : getString(R.string.mvApikeyRelease);
+		String apikey = debug ? getString(R.string.mvApikeyDebug)
+				: getString(R.string.mvApikeyRelease);
 
 		// Create map view
 		mapView = new MapView(this, apikey);
 		mapView.setClickable(true);
-		MapView.LayoutParams mvlp = new MapView.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-				ViewGroup.LayoutParams.FILL_PARENT, 0, 0, MapView.LayoutParams.CENTER);
+		MapView.LayoutParams mvlp = new MapView.LayoutParams(
+				ViewGroup.LayoutParams.FILL_PARENT,
+				ViewGroup.LayoutParams.FILL_PARENT, 0, 0,
+				MapView.LayoutParams.CENTER);
 		mapView.setLayoutParams(mvlp);
 
 		// Create layout
-		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT,
+		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.FILL_PARENT,
 				RelativeLayout.LayoutParams.FILL_PARENT);
 		RelativeLayout rl = new RelativeLayout(this);
 		rl.setLayoutParams(lp);
@@ -103,7 +108,8 @@ public class BPTMap extends MapActivity {
 		// Get map bounds
 		double minLat = Double.MAX_VALUE, maxLat = Double.MIN_VALUE;
 		double minLon = Double.MAX_VALUE, maxLon = Double.MIN_VALUE;
-		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
+				Preferences.PREF_TRACKNAME_DEFAULT);
 		Cursor c = databaseHelper.getPointList(trackName, true);
 		c.moveToNext();
 		while (!c.isAfterLast()) {
@@ -128,7 +134,8 @@ public class BPTMap extends MapActivity {
 			GeoPoint p = new GeoPoint((int) (lat * 1E6), (int) (lon * 1E6));
 			MapController mc = mapView.getController();
 			mc.setCenter(p);
-			mc.zoomToSpan((int) ((maxLat - minLat) * 1E6), (int) ((maxLon - minLon) * 1E6));
+			mc.zoomToSpan((int) ((maxLat - minLat) * 1E6),
+					(int) ((maxLon - minLon) * 1E6));
 		}
 
 		// Apply overlay
@@ -188,24 +195,30 @@ public class BPTMap extends MapActivity {
 	class MapOverlay extends com.google.android.maps.Overlay {
 
 		@Override
-		public boolean draw(Canvas canvas, MapView mapView, boolean shadow, long when) {
+		public boolean draw(Canvas canvas, MapView mapView, boolean shadow,
+				long when) {
 			super.draw(canvas, mapView, shadow);
 
 			// Get current tags
-			String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
+			String trackName = preferences.getString(
+					Preferences.PREF_TRACKNAME,
+					Preferences.PREF_TRACKNAME_DEFAULT);
 
 			// Draw waypoints
 			Cursor cTP = databaseHelper.getPointList(trackName, true);
 			cTP.moveToNext();
 			while (!cTP.isAfterLast()) {
-				GeoPoint p = new GeoPoint((int) (cTP.getDouble(cTP.getColumnIndex("LATITUDE")) * 1E6), (int) (cTP
-						.getDouble(cTP.getColumnIndex("LONGITUDE")) * 1E6));
+				GeoPoint p = new GeoPoint(
+						(int) (cTP.getDouble(cTP.getColumnIndex("LATITUDE")) * 1E6),
+						(int) (cTP.getDouble(cTP.getColumnIndex("LONGITUDE")) * 1E6));
 
 				Point screenPts = new Point();
 				mapView.getProjection().toPixels(p, screenPts);
 
-				Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.marker);
-				canvas.drawBitmap(bmp, screenPts.x, screenPts.y - bmp.getHeight(), null);
+				Bitmap bmp = BitmapFactory.decodeResource(getResources(),
+						R.drawable.marker);
+				canvas.drawBitmap(bmp, screenPts.x,
+						screenPts.y - bmp.getHeight(), null);
 				cTP.moveToNext();
 			}
 			cTP.close();
@@ -223,8 +236,9 @@ public class BPTMap extends MapActivity {
 			Cursor cWpt = databaseHelper.getPointList(trackName, false);
 			cWpt.moveToNext();
 			while (!cWpt.isAfterLast()) {
-				GeoPoint p = new GeoPoint((int) (cWpt.getDouble(cWpt.getColumnIndex("LATITUDE")) * 1E6), (int) (cWpt
-						.getDouble(cWpt.getColumnIndex("LONGITUDE")) * 1E6));
+				GeoPoint p = new GeoPoint(
+						(int) (cWpt.getDouble(cWpt.getColumnIndex("LATITUDE")) * 1E6),
+						(int) (cWpt.getDouble(cWpt.getColumnIndex("LONGITUDE")) * 1E6));
 				if (prev != null) {
 					Point p1 = new Point();
 					Point p2 = new Point();

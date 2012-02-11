@@ -70,6 +70,10 @@ Other application options:
 * Min. accuracy: tracking will stop after this accuracy has been reached (default 20 meters)
 * Geocode count: the number of addresses to show when reverse geocoding (default 5 addresses)
 
+Changelog
+---------
+See [here](http://wordpress.org/extend/plugins/backpacktrack-for-android/changelog/ "changelog")
+
 Frequently Asked Questions
 --------------------------
 
@@ -79,7 +83,7 @@ Read [here](http://blog.bokhorst.biz/5283/computers-en-internet/backpacktrack-fo
 
 **Where can I download the Android application?**
 
-This is the [direct download link](https://github.com/downloads/M66B/BackPackTrack/BackPackTrack.apk "BackPackTrack for Android") to the latest version
+This is the [direct download link](https://github.com/downloads/M66B/BackPackTrack/BackPackTrack.0.4.apk "BackPackTrack for Android") to the latest version
 on the [github project page](https://github.com/M66B/BackPackTrack "Android application").
 
 **Why does the time of the locations differ from the clock time?**

@@ -1,22 +1,23 @@
-/*
-	Copyright 2011 Marcel Bokhorst
-
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or
-	(at your option) any later version.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
-
 package biz.bokhorst;
+
+/*
+ Copyright 2011, 2012 Marcel Bokhorst
+ All Rights Reserved
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -41,25 +42,29 @@ import android.os.Message;
 import android.os.Messenger;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
+import android.os.PowerManager;
 
-public class BPTService extends IntentService implements LocationListener, GpsStatus.Listener {
+public class BPTService extends IntentService implements LocationListener,
+		GpsStatus.Listener {
 	// Messages
 	public static final int MSG_REPLY = 1;
 	public static final int MSG_WAYPOINT = 2;
 
-	private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("HH:mm:ss");
+	private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(
+			"HH:mm:ss");
 
 	// Helpers
 	private LocationManager locationManager = null;
 	private DatabaseHelper databaseHelper = null;
 	private SharedPreferences preferences = null;
-	private Handler handler = null;
+	private PowerManager.WakeLock wakeLock = null;
+	private Handler taskHandler = null;
 	private Messenger clientMessenger = null;
 
 	// State
 	private boolean waypoint = false;
 	private boolean locating = false;
-	private boolean fixwait = false;
+	private boolean locationwait = false;
 	private Location bestLocation = null;
 	private Date nextTrackTime;
 
@@ -78,7 +83,11 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 			if (msg.replyTo != null)
 				clientMessenger = msg.replyTo;
 			waypoint = (msg.what == MSG_WAYPOINT);
-			handler.post(TrackTask);
+
+			// Immediate start location
+			wakeLock.acquire();
+			taskHandler.removeCallbacks(PeriodicTrackTask);
+			taskHandler.post(PeriodicTrackTask);
 		}
 	}
 
@@ -86,6 +95,7 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 
 	@Override
 	public IBinder onBind(Intent intent) {
+		// Save context
 		Context context = getApplicationContext();
 
 		// Build notification
@@ -93,11 +103,13 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 		toLaunch.setAction("android.intent.action.MAIN");
 		toLaunch.addCategory("android.intent.category.LAUNCHER");
 
-		PendingIntent intentBack = PendingIntent.getActivity(context, 0, toLaunch, PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent intentBack = PendingIntent.getActivity(context, 0,
+				toLaunch, PendingIntent.FLAG_UPDATE_CURRENT);
 
-		Notification notification = new Notification(R.drawable.icon, getText(R.string.Running), System
-				.currentTimeMillis());
-		notification.setLatestEventInfo(context, getText(R.string.app_name), getText(R.string.Running), intentBack);
+		Notification notification = new Notification(R.drawable.icon,
+				getText(R.string.Running), System.currentTimeMillis());
+		notification.setLatestEventInfo(context, getText(R.string.app_name),
+				getText(R.string.Running), intentBack);
 
 		// Start foreground service
 		// Requires API level 5 (Android 2.0)
@@ -107,16 +119,33 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		databaseHelper = new DatabaseHelper(context);
 		preferences = PreferenceManager.getDefaultSharedPreferences(context);
-		handler = new Handler();
+		PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+				"BPT");
+		taskHandler = new Handler();
 
 		return serverMessenger.getBinder();
 	}
 
 	@Override
 	public boolean onUnbind(Intent intent) {
-		handler.removeCallbacks(TrackTask);
-		stopLocating();
+		// Stop periodic track task (if any)
+		taskHandler.removeCallbacks(PeriodicTrackTask);
+
+		// Stop locating procedure (if any)
+		stopLocating(); // Removes other tasks
+
+		// Stop foreground service
 		stopForeground(true);
+
+		// Dispose helpers
+		taskHandler = null;
+		wakeLock.release();
+		wakeLock = null;
+		preferences = null;
+		databaseHelper = null;
+		locationManager = null;
+
 		return super.onUnbind(intent);
 	}
 
@@ -124,19 +153,27 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 	protected void startLocating() {
 		if (!locating) {
 			locating = true;
-			fixwait = false;
-			long timeout = Integer.parseInt(preferences.getString(Preferences.PREF_FIXTIMEOUT,
-					Preferences.PREF_FIXTIMEOUT_DEFAULT)) * 1000L;
-			handler.postDelayed(FixTimeoutTask, timeout);
 
-			// Request updates
-			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+			// Start waiting for fix
+			long timeout = Integer.parseInt(preferences.getString(
+					Preferences.PREF_FIXTIMEOUT,
+					Preferences.PREF_FIXTIMEOUT_DEFAULT)) * 1000L;
+			taskHandler.postDelayed(FixTimeoutTask, timeout);
+
+			// Request location updates
+			locationwait = false;
+			locationManager.requestLocationUpdates(
+					LocationManager.GPS_PROVIDER, 0, 0, this);
 			locationManager.addGpsStatusListener(this);
 
+			// User feedback
 			Date timeoutTime = new Date(System.currentTimeMillis() + timeout);
-			boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-			sendStage(String.format(getString(R.string.StageFixWait), TIME_FORMATTER.format(timeoutTime)));
-			sendStatus(gpsEnabled ? getString(R.string.On) : getString(R.string.Off));
+			boolean gpsEnabled = locationManager
+					.isProviderEnabled(LocationManager.GPS_PROVIDER);
+			sendStage(String.format(getString(R.string.StageFixWait),
+					TIME_FORMATTER.format(timeoutTime)));
+			sendStatus(gpsEnabled ? getString(R.string.On)
+					: getString(R.string.Off));
 			sendSatellites(-1, -1);
 		}
 	}
@@ -145,12 +182,16 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 	protected void stopLocating() {
 		if (locating) {
 			locating = false;
-			handler.removeCallbacks(FixTimeoutTask);
-			handler.removeCallbacks(LocationWaitTask);
 
+			// Cancel fix/location tasks
+			taskHandler.removeCallbacks(FixTimeoutTask);
+			taskHandler.removeCallbacks(LocationWaitTimeoutTask);
+
+			// Disable location updates
 			locationManager.removeGpsStatusListener(this);
 			locationManager.removeUpdates(this);
 
+			// User feedback
 			sendStage(getString(R.string.na));
 			sendStatus(getString(R.string.na));
 			sendSatellites(-1, -1);
@@ -160,91 +201,138 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 	@Override
 	public void onLocationChanged(Location location) {
 		if (locating) {
-			handler.removeCallbacks(FixTimeoutTask);
-			int minAccuracy = Integer.parseInt(preferences.getString(Preferences.PREF_MINACCURACY,
+			// Have location: stop fix timeout task
+			taskHandler.removeCallbacks(FixTimeoutTask);
+
+			// Get minimum accuracy
+			int minAccuracy = Integer.parseInt(preferences.getString(
+					Preferences.PREF_MINACCURACY,
 					Preferences.PREF_MINACCURACY_DEFAULT));
-			if (fixwait) {
+
+			if (locationwait) {
 				// Record best location
 				if (location.getAccuracy() <= bestLocation.getAccuracy())
 					bestLocation = location;
 
 				// Check if minimum accuracy reached
 				if (location.getAccuracy() < minAccuracy) {
-					handler.removeCallbacks(LocationWaitTask);
-					handler.post(LocationWaitTask);
+					// Immediately handle location
+					taskHandler.removeCallbacks(LocationWaitTimeoutTask);
+					taskHandler.post(LocationWaitTimeoutTask);
 				}
 			} else {
-				// Start waiting for accurate location
-				fixwait = true;
+				// Start waiting for best location
+				locationwait = true;
+
+				// Current location is best location (for now)
 				bestLocation = location;
-				long wait = Integer.parseInt(preferences.getString(Preferences.PREF_MAXWAIT,
+				long wait = Integer.parseInt(preferences.getString(
+						Preferences.PREF_MAXWAIT,
 						Preferences.PREF_MAXWAIT_DEFAULT)) * 1000L;
-				handler.postDelayed(LocationWaitTask, wait);
+
+				// Wait for best location for some time
+				taskHandler.postDelayed(LocationWaitTimeoutTask, wait);
 				Date waitTime = new Date(System.currentTimeMillis() + wait);
-				sendStage(String.format(getString(R.string.StageTrackWait), TIME_FORMATTER.format(waitTime),
-						minAccuracy));
+
+				// User feedback
+				sendStage(String.format(getString(R.string.StageTrackWait),
+						TIME_FORMATTER.format(waitTime), minAccuracy));
 			}
 		}
 
-		// Always update location
+		// User feedback
 		sendLocation(location);
 	}
 
-	// Tracking timer
-	final Runnable TrackTask = new Runnable() {
+	// Periodic tracking
+	final Runnable PeriodicTrackTask = new Runnable() {
 		public void run() {
+			// Start locating procedure
 			startLocating();
-			long interval = Integer.parseInt(preferences.getString(Preferences.PREF_TRACKINTERVAL,
+
+			// Reschedule
+			long interval = Integer.parseInt(preferences.getString(
+					Preferences.PREF_TRACKINTERVAL,
 					Preferences.PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
-			handler.postDelayed(TrackTask, interval);
+			taskHandler.postDelayed(PeriodicTrackTask, interval);
+
+			// Prepare user feedback
 			nextTrackTime = new Date(System.currentTimeMillis() + interval);
 		}
 	};
 
 	// Fix wait done
-	final Runnable LocationWaitTask = new Runnable() {
+	final Runnable LocationWaitTimeoutTask = new Runnable() {
 		public void run() {
+			// Stop locating procedure
 			stopLocating();
-			sendLocation(bestLocation);
+
+			// Always make track point
 			makeTrackpoint(bestLocation);
+
+			// Make way point
 			if (waypoint) {
 				waypoint = false;
 				makeWaypoint(bestLocation);
 			}
-			sendStage(String.format(getString(R.string.StageTracked), TIME_FORMATTER.format(nextTrackTime)));
+
+			// User feedback
+			sendLocation(bestLocation);
+			sendStage(String.format(getString(R.string.StageTracked),
+					TIME_FORMATTER.format(nextTrackTime)));
 		}
 	};
 
 	// Fix timeout
 	final Runnable FixTimeoutTask = new Runnable() {
 		public void run() {
+			// Stop locating procedure
 			stopLocating();
-			waypoint = false;
-			sendStage(String.format(getString(R.string.StageFixTimeout), TIME_FORMATTER.format(nextTrackTime)));
 
-			// Use last location if younger
-			String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
-			Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			sendLocation(location);
-			if (location != null && location.getTime() > databaseHelper.getYoungest(trackName, false))
+			// Prevent way point
+			waypoint = false;
+
+			// Get last know location
+			String trackName = preferences.getString(
+					Preferences.PREF_TRACKNAME,
+					Preferences.PREF_TRACKNAME_DEFAULT);
+			Location location = locationManager
+					.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+			// Use last known location if younger
+			if (location != null
+					&& location.getTime() > databaseHelper.getYoungest(
+							trackName, false))
 				makeTrackpoint(location);
+
+			// User feedback
+			sendStage(String.format(getString(R.string.StageFixTimeout),
+					TIME_FORMATTER.format(nextTrackTime)));
+			sendLocation(location);
 		}
 	};
 
 	// Helper method create track point
 	protected void makeTrackpoint(Location location) {
-		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
+				Preferences.PREF_TRACKNAME_DEFAULT);
 		databaseHelper.insertPoint(trackName, null, location, null, false);
+
+		// User feedback
 		sendMessage(BackPackTrack.MSG_UPDATETRACK, null);
-		Toast.makeText(this, getString(R.string.TrackpointAdded), Toast.LENGTH_LONG).show();
+		Toast.makeText(this, getString(R.string.TrackpointAdded),
+				Toast.LENGTH_LONG).show();
 	}
 
 	// Helper create way point
 	private void makeWaypoint(Location location) {
-		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
+				Preferences.PREF_TRACKNAME_DEFAULT);
 		int count = databaseHelper.countPoints(trackName, true);
 		String name = String.format("%03d", count + 1);
 		databaseHelper.insertPoint(trackName, null, location, name, true);
+
+		// User feedback
 		sendMessage(BackPackTrack.MSG_UPDATETRACK, null);
 		String msg = String.format(getString(R.string.WaypointAdded), name);
 		Toast.makeText(this, msg, Toast.LENGTH_LONG).show();

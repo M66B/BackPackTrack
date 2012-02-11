@@ -3,8 +3,8 @@ Contributors: Marcel Bokhorst, M66B
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AJSBB7DGNA3MJ&lc=US&item_name=BackPackTrack%20for%20Android&item_number=Marcel%20Bokhorst&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted
 Tags: android, gpx, post, posts, maps, google, google maps, routes, tracks, geocode, geotag
 Requires at least: 3.1
-Tested up to: 3.2
-Stable tag: 0.3
+Tested up to: 3.3.1
+Stable tag: 0.4
 
 WordPress plugin and open source Android application to track and display your journeys
 
@@ -99,6 +99,11 @@ You can report issues [here](https://github.com/M66B/BackPackTrack/issues "githu
 2. Quick Response code
 
 == Changelog ==
+
+= 0.4 =
+* Improvement: Android: acquiring partial wake lock
+* Improvement: Android: more source code documentation
+* Improvement: Android: list newest waypoint first
 
 = 0.3 =
 * Improvement: added option to write GPX file to external storage

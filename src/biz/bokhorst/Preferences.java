@@ -1,22 +1,23 @@
 package biz.bokhorst;
 
 /*
-	Copyright 2011 Marcel Bokhorst
+ Copyright 2011, 2012 Marcel Bokhorst
+ All Rights Reserved
 
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or
-	(at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,9 +64,10 @@ public class Preferences extends PreferenceActivity {
 		Preference p = this.getPreferenceScreen().findPreference("TrackName");
 		p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				ListPreference lp = (ListPreference) Preferences.this.getPreferenceScreen().findPreference(
-						"TrackNameList");
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
+				ListPreference lp = (ListPreference) Preferences.this
+						.getPreferenceScreen().findPreference("TrackNameList");
 				SharedPreferences.Editor editor = lp.getEditor();
 				editor.putString("TrackNameList", (String) newValue);
 				editor.commit();
@@ -75,12 +77,15 @@ public class Preferences extends PreferenceActivity {
 		});
 
 		// Track name list
-		ListPreference lp = (ListPreference) this.getPreferenceScreen().findPreference("TrackNameList");
+		ListPreference lp = (ListPreference) this.getPreferenceScreen()
+				.findPreference("TrackNameList");
 		setTrackNameList(lp);
 		lp.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				Preference p = Preferences.this.getPreferenceScreen().findPreference("TrackName");
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
+				Preference p = Preferences.this.getPreferenceScreen()
+						.findPreference("TrackName");
 				SharedPreferences.Editor editor = p.getEditor();
 				editor.putString("TrackName", (String) newValue);
 				editor.commit();
