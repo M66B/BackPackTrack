@@ -29,6 +29,8 @@ The Android application is designed for low power and offline use.
 If you want to continuously track your position, you can better use [My Tracks](http://mytracks.appspot.com/ "My Tracks"),
 although this application doesn't have an option to upload GPX files to your weblog.
 
+[Review](http://jaysjourneys.com/2012/02/09/backpacktrack/ "Review")
+
 If you find this plugin useful, please rate it accordingly.
 If you rate this plugin low, please [let me know why](http://blog.bokhorst.biz/contact/ "Marcel Bokhorst").
 Please report any issue you have with this plugin [here](https://github.com/M66B/BackPackTrack/issues "github - issues"), so I can at least try to fix it.
