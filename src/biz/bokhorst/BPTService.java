@@ -40,6 +40,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 import android.os.PowerManager;
@@ -60,6 +61,7 @@ public class BPTService extends IntentService implements LocationListener,
 	private PowerManager.WakeLock wakeLock = null;
 	private Handler taskHandler = null;
 	private Messenger clientMessenger = null;
+	private Vibrator vibrator = null;
 
 	// State
 	private boolean waypoint = false;
@@ -123,6 +125,7 @@ public class BPTService extends IntentService implements LocationListener,
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
 				"BPT");
 		taskHandler = new Handler();
+		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
 		return serverMessenger.getBinder();
 	}
@@ -274,6 +277,7 @@ public class BPTService extends IntentService implements LocationListener,
 			if (waypoint) {
 				waypoint = false;
 				makeWaypoint(bestLocation);
+				vibrator.vibrate(300);
 			}
 
 			// User feedback
