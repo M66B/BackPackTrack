@@ -35,6 +35,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -277,13 +279,13 @@ public class BPTService extends IntentService implements LocationListener,
 			if (waypoint) {
 				waypoint = false;
 				makeWaypoint(bestLocation);
-				vibrator.vibrate(300);
 			}
 
 			// User feedback
 			sendLocation(bestLocation);
 			sendStage(String.format(getString(R.string.StageTracked),
 					TIME_FORMATTER.format(nextTrackTime)));
+			sendMessage(BackPackTrack.MSG_AUTOUPDATE, null);
 		}
 	};
 
@@ -340,6 +342,7 @@ public class BPTService extends IntentService implements LocationListener,
 		sendMessage(BackPackTrack.MSG_UPDATETRACK, null);
 		String msg = String.format(getString(R.string.WaypointAdded), name);
 		Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+		vibrator.vibrate(500);
 	}
 
 	// GPS disabled

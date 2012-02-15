@@ -11,6 +11,8 @@
 			android:title="User" android:summary="Weblog user name" />
 		<EditTextPreference android:key="BlogPwd"
 			android:password="true" android:title="Password" android:summary="Weblog pass word" />
+		<CheckBoxPreference android:key="BlogAutoUpdate"
+			android:title="Auto update" android:summary="Auto upload GPX file when network available" />
 	</PreferenceCategory>
 	<PreferenceCategory android:title="Tracking">
 		<EditTextPreference android:key="TrackName"

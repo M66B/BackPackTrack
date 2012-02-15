@@ -36,11 +36,13 @@ public class Preferences extends PreferenceActivity {
 	public static final String PREF_BLOGID = "BlogID";
 	public static final String PREF_BLOGUSER = "BlogUser";
 	public static final String PREF_BLOGPWD = "BlogPwd";
+	public static final String PREF_BLOGAUTOUPDATE = "BlogAutoUpdate";
 
 	public static final String PREF_BLOGURL_DEFAULT = "";
 	public static final String PREF_BLOGID_DEFAULT = "1";
 	public static final String PREF_BLOGUSER_DEFAULT = "";
 	public static final String PREF_BLOGPWD_DEFAULT = "";
+	public static final boolean PREF_BLOGAUTOUPDATE_DEFAULT = false;
 
 	public static final String PREF_TRACKNAME = "TrackName";
 	public static final String PREF_TRACKINTERVAL = "TrackInterval";

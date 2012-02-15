@@ -3,7 +3,7 @@
 Plugin Name: BackPackTrack
 Plugin URI: http://blog.bokhorst.biz/5283/computers-en-internet/backpacktrack-for-android/
 Description: BackPackTrack XML-RPC methods
-Version: 0.4
+Version: 0.5
 Author: Marcel Bokhorst
 Author URI: http://blog.bokhorst.biz/about/
 */
