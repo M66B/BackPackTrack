@@ -248,7 +248,7 @@ public class BackPackTrack extends Activity implements
 			editWaypoint();
 			return true;
 		case R.id.menuWriteGPX:
-			writeGPXFile();
+			writeGPXFile(getBaseContext());
 			return true;
 		case R.id.menuUpload:
 			updateTrack();
@@ -659,12 +659,12 @@ public class BackPackTrack extends Activity implements
 		b.show();
 	}
 
-	private void writeGPXFile() {
+	private void writeGPXFile(Context context) {
 		try {
 			String trackName = preferences.getString(
 					Preferences.PREF_TRACKNAME,
 					Preferences.PREF_TRACKNAME_DEFAULT);
-			String gpxFileName = writeGPXFile(trackName);
+			String gpxFileName = writeGPXFile(context, trackName);
 			Toast.makeText(BackPackTrack.this,
 					String.format(getString(R.string.written), gpxFileName),
 					Toast.LENGTH_LONG).show();
@@ -674,16 +674,17 @@ public class BackPackTrack extends Activity implements
 		}
 	}
 
-	private String writeGPXFile(String trackName) throws IOException {
+	private String writeGPXFile(Context context, String trackName)
+			throws IOException {
 		// Write GPX file
+		File folder = null;
 		String gpxFileName = null;
 		if (Environment.MEDIA_MOUNTED.equals(Environment
 				.getExternalStorageState()))
-			gpxFileName = Environment.getExternalStorageDirectory() + "/"
-					+ trackName + ".gpx";
+			folder = Environment.getExternalStorageDirectory();
 		else
-			gpxFileName = Environment.getDataDirectory() + "/" + trackName
-					+ ".gpx";
+			folder = context.getFilesDir();
+		gpxFileName = folder + "/" + trackName + ".gpx";
 		Cursor cWpt = databaseHelper.getPointList(trackName, true);
 		Cursor cTP = databaseHelper.getPointList(trackName, false);
 		GPXFileWriter.writeGpxFile(trackName, cTP, cWpt, new File(gpxFileName));
@@ -698,7 +699,7 @@ public class BackPackTrack extends Activity implements
 			String trackName = preferences.getString(
 					Preferences.PREF_TRACKNAME,
 					Preferences.PREF_TRACKNAME_DEFAULT);
-			String gpxFileName = writeGPXFile(trackName);
+			String gpxFileName = writeGPXFile(getBaseContext(), trackName);
 
 			// Get GPX file content
 			File gpx = new File(gpxFileName);
