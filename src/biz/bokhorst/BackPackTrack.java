@@ -56,6 +56,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
@@ -131,6 +132,7 @@ public class BackPackTrack extends Activity implements
 	private TextView txtAccuracy;
 	private TextView txtTime;
 	private TextView txtTrackName;
+	private TextView txtVersion;
 	private Button btnStart;
 	private Button btnStop;
 	private Button btnUpdate;
@@ -181,11 +183,22 @@ public class BackPackTrack extends Activity implements
 		txtAccuracy = (TextView) findViewById(R.id.txtAccuracy);
 		txtTime = (TextView) findViewById(R.id.txtTime);
 		txtTrackName = (TextView) findViewById(R.id.txtTrackName);
+		txtVersion = (TextView) findViewById(R.id.txtVersion);
 		btnStart = (Button) findViewById(R.id.btnStart);
 		btnStop = (Button) findViewById(R.id.btnStop);
 		btnUpdate = (Button) findViewById(R.id.btnUpdate);
 		btnWaypoint = (Button) findViewById(R.id.btnWaypoint);
 		btnGeocode = (Button) findViewById(R.id.btnGeocode);
+
+		try {
+			String versionName = context.getPackageManager().getPackageInfo(
+					getPackageName(), 0).versionName;
+			int versionCode = context.getPackageManager().getPackageInfo(
+					getPackageName(), 0).versionCode;
+			txtVersion.setText(String.format("%s (%d)", versionName,
+					versionCode));
+		} catch (PackageManager.NameNotFoundException ex) {
+		}
 
 		// Initialize UI
 		updateTrack();

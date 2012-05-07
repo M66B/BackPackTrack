@@ -1,62 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">BackPackTrack</string>
-	<string name="set_preferences">Preferences</string>
-	<string name="Running">BackPackTrack running</string>
-	<string name="Status">Status:</string>
-	<string name="Stage">Stage:</string>
-	<string name="Satellites">Satellites:</string>
-	<string name="Latitude">Latitude:</string>
-	<string name="Longitude">Longitude:</string>
-	<string name="Altitude">Altitude:</string>
-	<string name="Speed">Speed:</string>
-	<string name="Accuracy">Accuracy:</string>
-	<string name="Time">Time:</string>
-	<string name="TrackName">Track:</string>
-	<string name="na">n/a</string>
-	<string name="Start">Start</string>
-	<string name="Stop">Stop</string>
-	<string name="Update">Update</string>
-	<string name="Waypoint">Waypoint</string>
-	<string name="On">On</string>
-	<string name="Off">Off</string>
-	<string name="WaypointAdded">Waypoint \'%s\' added</string>
-	<string name="TrackpointAdded">Trackpoint added</string>
-	<string name="WaypointRenamed" formatted="false">Waypoint \'%s\' renamed
+
+    <string name="app_name">BackPackTrack</string>
+    <string name="set_preferences">Preferences</string>
+    <string name="Running">BackPackTrack running</string>
+    <string name="Status">Status:</string>
+    <string name="Stage">Stage:</string>
+    <string name="Satellites">Satellites:</string>
+    <string name="Latitude">Latitude:</string>
+    <string name="Longitude">Longitude:</string>
+    <string name="Altitude">Altitude:</string>
+    <string name="Speed">Speed:</string>
+    <string name="Accuracy">Accuracy:</string>
+    <string name="Time">Time:</string>
+    <string name="TrackName">Track:</string>
+    <string name="Version">Version:</string>
+    <string name="na">n/a</string>
+    <string name="Start">Start</string>
+    <string name="Stop">Stop</string>
+    <string name="Update">Update</string>
+    <string name="Waypoint">Waypoint</string>
+    <string name="On">On</string>
+    <string name="Off">Off</string>
+    <string name="WaypointAdded">Waypoint \'%s\' added</string>
+    <string name="TrackpointAdded">Trackpoint added</string>
+    <string name="WaypointRenamed" formatted="false">Waypoint \'%s\' renamed
 		into \'%s\</string>
-	<string name="DeleteWaypoint">Delete waypoint \'%s\' ?</string>
-	<string name="WaypointDeleted">Waypoint \'%s\' deleted</string>
-	<string name="ClearTrack">Clear track \'%s\' ?</string>
-	<string name="TrackCleared">Track \'%s\' cleared</string>
-	<string name="StatusNoService">Out of service</string>
-	<string name="StatusUnavailable">Temporarily unavailable</string>
-	<string name="StatusAvailable">Available</string>
-	<string name="GpsFix">Fix</string>
-	<string name="GpsStarted">Started</string>
-	<string name="GpsStopped">Stopped</string>
-	<string name="Address">Address</string>
-	<string name="Quit">Quit ?</string>
-	<string name="Geocode">Geocode</string>
-	<string name="Edit">Edit</string>
-	<string name="Rename">Rename</string>
-	<string name="Locate">Locate</string>
-	<string name="Delete">Delete</string>
-	<string name="writeGPX">Write GPX</string>
-	<string name="written">GPX written to %s</string>
-	<string name="Upload">Upload</string>
-	<string name="Uploaded">GPX uploaded to %s</string>
-	<string name="Map">Map</string>
-	<string name="Clear">Clear</string>
-	<string name="Settings">Settings</string>
-	<string name="Nolocation">No location</string>
-	<string name="StageFixWait">Fix wait until %s</string>
-	<string name="StageTrackWait" formatted="false">Tracking until %s %dm
-	</string>
-	<string name="StageFixTimeout">Fix timeout, next %s</string>
-	<string name="StageTracked">Tracked, next %s</string>
-	<string name="Satellite">Satellite</string>
-	<string name="StreetView">StreetView</string>
-	<string name="Traffic">Traffic</string>
-	<string name="mvApikeyDebug">0fHCwXLhxjaIfExOIcGB-6h9liWNcM1HTSZ1OLw</string>
-	<string name="mvApikeyRelease">0fHCwXLhxjaIKIiPxJyumXgvQeLmxKMh29qJ3-w</string>
+    <string name="DeleteWaypoint">Delete waypoint \'%s\' ?</string>
+    <string name="WaypointDeleted">Waypoint \'%s\' deleted</string>
+    <string name="ClearTrack">Clear track \'%s\' ?</string>
+    <string name="TrackCleared">Track \'%s\' cleared</string>
+    <string name="StatusNoService">Out of service</string>
+    <string name="StatusUnavailable">Temporarily unavailable</string>
+    <string name="StatusAvailable">Available</string>
+    <string name="GpsFix">Fix</string>
+    <string name="GpsStarted">Started</string>
+    <string name="GpsStopped">Stopped</string>
+    <string name="Address">Address</string>
+    <string name="Quit">Quit ?</string>
+    <string name="Geocode">Geocode</string>
+    <string name="Edit">Edit</string>
+    <string name="Rename">Rename</string>
+    <string name="Locate">Locate</string>
+    <string name="Delete">Delete</string>
+    <string name="writeGPX">Write GPX</string>
+    <string name="written">GPX written to %s</string>
+    <string name="Upload">Upload</string>
+    <string name="Uploaded">GPX uploaded to %s</string>
+    <string name="Map">Map</string>
+    <string name="Clear">Clear</string>
+    <string name="Settings">Settings</string>
+    <string name="Nolocation">No location</string>
+    <string name="StageFixWait">Fix wait until %s</string>
+    <string name="StageTrackWait" formatted="false">Tracking until %s %dm</string>
+    <string name="StageFixTimeout">Fix timeout, next %s</string>
+    <string name="StageTracked">Tracked, next %s</string>
+    <string name="Satellite">Satellite</string>
+    <string name="StreetView">StreetView</string>
+    <string name="Traffic">Traffic</string>
+    <string name="mvApikeyDebug">0fHCwXLhxjaIfExOIcGB-6h9liWNcM1HTSZ1OLw</string>
+    <string name="mvApikeyRelease">0fHCwXLhxjaIKIiPxJyumXgvQeLmxKMh29qJ3-w</string>
+
 </resources>
