@@ -72,6 +72,7 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// State
 	private boolean bound = false;
+	private boolean hasWakeLock = false;
 	private boolean waypoint = false;
 	private boolean locating = false;
 	private boolean locationwait = false;
@@ -81,7 +82,10 @@ public class BPTService extends IntentService implements LocationListener,
 	public class BPTAlarmReceiver extends BroadcastReceiver {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			wakeLock.acquire();
+			if (!hasWakeLock) {
+				hasWakeLock = true;
+				wakeLock.acquire();
+			}
 			taskHandler.removeCallbacks(PeriodicTrackTask);
 			taskHandler.post(PeriodicTrackTask);
 		}
@@ -104,7 +108,10 @@ public class BPTService extends IntentService implements LocationListener,
 			waypoint = (msg.what == MSG_WAYPOINT);
 
 			// Immediate start location
-			wakeLock.acquire();
+			if (!hasWakeLock) {
+				hasWakeLock = true;
+				wakeLock.acquire();
+			}
 			taskHandler.removeCallbacks(PeriodicTrackTask);
 			taskHandler.post(PeriodicTrackTask);
 		}
@@ -121,6 +128,8 @@ public class BPTService extends IntentService implements LocationListener,
 		Intent toLaunch = new Intent(context, BackPackTrack.class);
 		toLaunch.setAction("android.intent.action.MAIN");
 		toLaunch.addCategory("android.intent.category.LAUNCHER");
+		toLaunch.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 		PendingIntent intentBack = PendingIntent.getActivity(context, 0,
 				toLaunch, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -169,7 +178,10 @@ public class BPTService extends IntentService implements LocationListener,
 
 			// Dispose helpers
 			taskHandler = null;
-			wakeLock.release();
+			if (hasWakeLock) {
+				hasWakeLock = false;
+				wakeLock.release();
+			}
 			wakeLock = null;
 			preferences = null;
 			databaseHelper = null;
@@ -319,7 +331,10 @@ public class BPTService extends IntentService implements LocationListener,
 					TIME_FORMATTER.format(nextTrackTime)));
 			sendMessage(BackPackTrack.MSG_AUTOUPDATE, null);
 
-			wakeLock.release();
+			if (hasWakeLock) {
+				hasWakeLock = false;
+				wakeLock.release();
+			}
 		}
 	};
 
@@ -350,7 +365,10 @@ public class BPTService extends IntentService implements LocationListener,
 					TIME_FORMATTER.format(nextTrackTime)));
 			sendLocation(location);
 
-			wakeLock.release();
+			if (hasWakeLock) {
+				hasWakeLock = false;
+				wakeLock.release();
+			}
 		}
 	};
 
