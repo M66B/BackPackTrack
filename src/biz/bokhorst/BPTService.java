@@ -23,11 +23,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
@@ -40,6 +43,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.SystemClock;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
@@ -62,13 +66,26 @@ public class BPTService extends IntentService implements LocationListener,
 	private Handler taskHandler = null;
 	private Messenger clientMessenger = null;
 	private Vibrator vibrator = null;
+	private AlarmManager alarmManager = null;
+	private PendingIntent pendingAlarmIntent = null;
+	private BPTAlarmReceiver alarmReceiver = null;
 
 	// State
+	private boolean bound = false;
 	private boolean waypoint = false;
 	private boolean locating = false;
 	private boolean locationwait = false;
 	private Location bestLocation = null;
 	private Date nextTrackTime;
+
+	public class BPTAlarmReceiver extends BroadcastReceiver {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			wakeLock.acquire();
+			taskHandler.removeCallbacks(PeriodicTrackTask);
+			taskHandler.post(PeriodicTrackTask);
+		}
+	}
 
 	public BPTService() {
 		super("BPTService");
@@ -97,7 +114,7 @@ public class BPTService extends IntentService implements LocationListener,
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		// Save context
+		// Get context
 		Context context = getApplicationContext();
 
 		// Build notification
@@ -127,27 +144,37 @@ public class BPTService extends IntentService implements LocationListener,
 		taskHandler = new Handler();
 		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
+		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+		alarmReceiver = new BPTAlarmReceiver();
+		context.registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
+
+		bound = true;
 		return serverMessenger.getBinder();
 	}
 
 	@Override
 	public boolean onUnbind(Intent intent) {
-		// Stop periodic track task (if any)
-		taskHandler.removeCallbacks(PeriodicTrackTask);
+		if (bound) {
+			// Stop periodic track task (if any)
+			Context context = getApplicationContext();
+			context.unregisterReceiver(alarmReceiver);
+			alarmReceiver = null;
+			taskHandler.removeCallbacks(PeriodicTrackTask);
 
-		// Stop locating procedure (if any)
-		stopLocating(); // Removes other tasks
+			// Stop locating procedure (if any)
+			stopLocating(); // Removes other tasks
 
-		// Stop foreground service
-		stopForeground(true);
+			// Stop foreground service
+			stopForeground(true);
 
-		// Dispose helpers
-		taskHandler = null;
-		wakeLock.release();
-		wakeLock = null;
-		preferences = null;
-		databaseHelper = null;
-		locationManager = null;
+			// Dispose helpers
+			taskHandler = null;
+			wakeLock.release();
+			wakeLock = null;
+			preferences = null;
+			databaseHelper = null;
+			locationManager = null;
+		}
 
 		return super.onUnbind(intent);
 	}
@@ -257,7 +284,14 @@ public class BPTService extends IntentService implements LocationListener,
 			long interval = Integer.parseInt(preferences.getString(
 					Preferences.PREF_TRACKINTERVAL,
 					Preferences.PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
-			taskHandler.postDelayed(PeriodicTrackTask, interval);
+			// taskHandler.postDelayed(PeriodicTrackTask, interval);
+			Intent alarmIntent = new Intent("BPT_ALARM");
+			Context context = getApplicationContext();
+			pendingAlarmIntent = PendingIntent.getBroadcast(context, 0,
+					alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+			long alarmTime = SystemClock.elapsedRealtime() + interval;
+			alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, alarmTime,
+					pendingAlarmIntent);
 
 			// Prepare user feedback
 			nextTrackTime = new Date(System.currentTimeMillis() + interval);
@@ -284,6 +318,8 @@ public class BPTService extends IntentService implements LocationListener,
 			sendStage(String.format(getString(R.string.StageTracked),
 					TIME_FORMATTER.format(nextTrackTime)));
 			sendMessage(BackPackTrack.MSG_AUTOUPDATE, null);
+
+			wakeLock.release();
 		}
 	};
 
@@ -313,6 +349,8 @@ public class BPTService extends IntentService implements LocationListener,
 			sendStage(String.format(getString(R.string.StageFixTimeout),
 					TIME_FORMATTER.format(nextTrackTime)));
 			sendLocation(location);
+
+			wakeLock.release();
 		}
 	};
 
