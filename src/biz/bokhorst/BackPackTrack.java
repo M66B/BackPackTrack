@@ -287,18 +287,23 @@ public class BackPackTrack extends Activity implements
 	// Handle back button
 	@Override
 	public void onBackPressed() {
-		AlertDialog.Builder b = new AlertDialog.Builder(BackPackTrack.this);
-		b.setTitle(getString(R.string.app_name));
-		b.setMessage(getString(R.string.Quit));
+		if (started) {
+			AlertDialog.Builder b = new AlertDialog.Builder(BackPackTrack.this);
+			b.setTitle(getString(R.string.app_name));
+			b.setMessage(getString(R.string.Quit));
 
-		b.setPositiveButton(android.R.string.yes,
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						BackPackTrack.super.onBackPressed();
-					}
-				});
-		b.setNegativeButton(android.R.string.no, null);
-		b.show();
+			b.setPositiveButton(android.R.string.yes,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+							stop();
+							BackPackTrack.super.onBackPressed();
+						}
+					});
+			b.setNegativeButton(android.R.string.no, null);
+			b.show();
+		} else
+			BackPackTrack.super.onBackPressed();
 	}
 
 	// Monitor preference change
@@ -377,16 +382,28 @@ public class BackPackTrack extends Activity implements
 			txtAccuracy.setText(R.string.na);
 			txtTime.setText(R.string.na);
 		} else {
+			boolean imperial = preferences.getBoolean(
+					Preferences.PREF_IMPERIAL,
+					Preferences.PREF_IMPERIAL_DEFAULT);
 			txtLatitude.setText(String.format("%s", Location.convert(
 					location.getLatitude(), Location.FORMAT_SECONDS)));
 			txtLongitude.setText(String.format("%s", Location.convert(
 					location.getLongitude(), Location.FORMAT_SECONDS)));
-			txtAltitude.setText(String.format("%dm",
-					Math.round(location.getAltitude())));
-			txtSpeed.setText(String.format("%d m/s",
-					Math.round(location.getSpeed())));
-			txtAccuracy.setText(String.format("%dm",
-					Math.round(location.getAccuracy())));
+			if (imperial) {
+				txtAltitude.setText(String.format("%d ft",
+						Math.round(location.getAltitude() / 0.3048)));
+				txtSpeed.setText(String.format("%d ft/s",
+						Math.round(location.getSpeed() / 0.3048)));
+				txtAccuracy.setText(String.format("%d ft",
+						Math.round(location.getAccuracy() / 0.3048)));
+			} else {
+				txtAltitude.setText(String.format("%d m",
+						Math.round(location.getAltitude())));
+				txtSpeed.setText(String.format("%d m/s",
+						Math.round(location.getSpeed())));
+				txtAccuracy.setText(String.format("%d m",
+						Math.round(location.getAccuracy())));
+			}
 			txtTime.setText(String.format("%s",
 					DATETIME_FORMATTER.format(new Date(location.getTime()))));
 		}

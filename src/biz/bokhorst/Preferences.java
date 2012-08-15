@@ -50,6 +50,7 @@ public class Preferences extends PreferenceActivity {
 	public static final String PREF_MAXWAIT = "MaxWait";
 	public static final String PREF_MINACCURACY = "MinAccuracy";
 	public static final String PREF_GEOCODECOUNT = "GeocodeCount";
+	public static final String PREF_IMPERIAL = "Imperial";
 
 	public static final String PREF_TRACKNAME_DEFAULT = "Journey";
 	public static final String PREF_TRACKINTERVAL_DEFAULT = "30";
@@ -57,6 +58,7 @@ public class Preferences extends PreferenceActivity {
 	public static final String PREF_MAXWAIT_DEFAULT = "60";
 	public static final String PREF_MINACCURACY_DEFAULT = "20";
 	public static final String PREF_GEOCODECOUNT_DEFAULT = "5";
+	public static final boolean PREF_IMPERIAL_DEFAULT = false;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

@@ -1,38 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-	<PreferenceCategory android:title="Blog">
-		<EditTextPreference android:key="BlogURL"
-			android:title="URL" android:defaultValue="http://"
-			android:summary="Weblog URL including trailing slash" />
-		<EditTextPreference android:key="BlogID"
-			android:title="ID" android:defaultValue="1"
-			android:summary="Weblog identifier, one for single site installs" />
-		<EditTextPreference android:key="BlogUser"
-			android:title="User" android:summary="Weblog user name" />
-		<EditTextPreference android:key="BlogPwd"
-			android:password="true" android:title="Password" android:summary="Weblog pass word" />
-		<CheckBoxPreference android:key="BlogAutoUpdate"
-			android:title="Auto update" android:summary="Auto upload GPX file when network available" />
-	</PreferenceCategory>
-	<PreferenceCategory android:title="Tracking">
-		<EditTextPreference android:key="TrackName"
-			android:title="Track name" android:defaultValue="Journey" />
-		<ListPreference android:title="Track name list"
-			android:key="TrackNameList" />
-		<EditTextPreference android:key="TrackInterval"
-			android:title="Track interval" android:defaultValue="30"
-			android:summary="Create track point every xxx minutes" />
-		<EditTextPreference android:key="FixTimeout"
-			android:title="Fix timeout" android:defaultValue="300"
-			android:summary="Wait for GPS fix for xxx seconds" />
-		<EditTextPreference android:key="MaxWait"
-			android:title="Max. wait" android:defaultValue="60"
-			android:summary="Wait for best location for xxx seconds" />
-		<EditTextPreference android:key="MinAccuracy"
-			android:title="Min. accuracy" android:defaultValue="20"
-			android:summary="Wait for best location until xxx meters accuracy" />
-		<EditTextPreference android:key="GeocodeCount"
-			android:title="Geocode count" android:defaultValue="5"
-			android:summary="Number of names to display when geocoding" />
-	</PreferenceCategory>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory android:title="Blog" >
+        <EditTextPreference
+            android:defaultValue="http://"
+            android:key="BlogURL"
+            android:summary="Weblog URL including trailing slash"
+            android:title="URL" />
+        <EditTextPreference
+            android:defaultValue="1"
+            android:key="BlogID"
+            android:summary="Weblog identifier, one for single site installs"
+            android:title="ID" />
+        <EditTextPreference
+            android:key="BlogUser"
+            android:summary="Weblog user name"
+            android:title="User" />
+        <EditTextPreference
+            android:key="BlogPwd"
+            android:password="true"
+            android:summary="Weblog pass word"
+            android:title="Password" />
+
+        <CheckBoxPreference
+            android:key="BlogAutoUpdate"
+            android:summary="Auto upload GPX file when network available"
+            android:title="Auto update" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Tracking" >
+        <EditTextPreference
+            android:defaultValue="Journey"
+            android:key="TrackName"
+            android:title="Track name" />
+
+        <ListPreference
+            android:key="TrackNameList"
+            android:title="Track name list" />
+
+        <EditTextPreference
+            android:defaultValue="30"
+            android:key="TrackInterval"
+            android:summary="Create track point every xxx minutes"
+            android:title="Track interval" />
+        <EditTextPreference
+            android:defaultValue="300"
+            android:key="FixTimeout"
+            android:summary="Wait for GPS fix for xxx seconds"
+            android:title="Fix timeout" />
+        <EditTextPreference
+            android:defaultValue="60"
+            android:key="MaxWait"
+            android:summary="Wait for best location for xxx seconds"
+            android:title="Max. wait" />
+        <EditTextPreference
+            android:defaultValue="20"
+            android:key="MinAccuracy"
+            android:summary="Wait for best location until xxx meters accuracy"
+            android:title="Min. accuracy" />
+        <EditTextPreference
+            android:defaultValue="5"
+            android:key="GeocodeCount"
+            android:summary="Number of names to display when geocoding"
+            android:title="Geocode count" />
+
+        <CheckBoxPreference
+            android:key="Imperial"
+            android:summary="Feet, miles"
+            android:title="Imperial units" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

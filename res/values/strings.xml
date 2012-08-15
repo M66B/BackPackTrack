@@ -25,7 +25,7 @@
     <string name="WaypointAdded">Waypoint \'%s\' added</string>
     <string name="TrackpointAdded">Trackpoint added</string>
     <string name="WaypointRenamed" formatted="false">Waypoint \'%s\' renamed
-		into \'%s\</string>
+		into \'%s\'</string>
     <string name="DeleteWaypoint">Delete waypoint \'%s\' ?</string>
     <string name="WaypointDeleted">Waypoint \'%s\' deleted</string>
     <string name="ClearTrack">Clear track \'%s\' ?</string>
