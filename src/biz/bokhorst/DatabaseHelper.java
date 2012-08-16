@@ -101,14 +101,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	// Get list of points
-	public Cursor getPointList(String trackName, boolean wpt) {
+	public Cursor getPointList(String trackName, boolean wpt, boolean desc) {
 		SQLiteDatabase db = this.getReadableDatabase();
 		return db
 				.rawQuery(
 						"SELECT ID, TRACK, SEGMENT, LATITUDE, LONGITUDE, ALTITUDE, SPEED, ACCURACY, TIME, NAME FROM LOCATION"
 								+ " WHERE TRACK=? AND WPT="
 								+ (wpt ? "1" : "0")
-								+ " ORDER BY TIME DESC", new String[] { trackName });
+								+ " ORDER BY TIME" + (desc ? " DESC" : ""),
+						new String[] { trackName });
 	}
 
 	// Get youngest point

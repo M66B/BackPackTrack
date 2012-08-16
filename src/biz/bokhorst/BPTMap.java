@@ -110,7 +110,7 @@ public class BPTMap extends MapActivity {
 		double minLon = Double.MAX_VALUE, maxLon = Double.MIN_VALUE;
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
 				Preferences.PREF_TRACKNAME_DEFAULT);
-		Cursor c = databaseHelper.getPointList(trackName, true);
+		Cursor c = databaseHelper.getPointList(trackName, true, false);
 		c.moveToNext();
 		while (!c.isAfterLast()) {
 			double lat = c.getDouble(c.getColumnIndex("LATITUDE"));
@@ -205,7 +205,7 @@ public class BPTMap extends MapActivity {
 					Preferences.PREF_TRACKNAME_DEFAULT);
 
 			// Draw waypoints
-			Cursor cTP = databaseHelper.getPointList(trackName, true);
+			Cursor cTP = databaseHelper.getPointList(trackName, true, false);
 			cTP.moveToNext();
 			while (!cTP.isAfterLast()) {
 				GeoPoint p = new GeoPoint(
@@ -233,7 +233,7 @@ public class BPTMap extends MapActivity {
 			mPaint.setStrokeWidth(3);
 
 			GeoPoint prev = null;
-			Cursor cWpt = databaseHelper.getPointList(trackName, false);
+			Cursor cWpt = databaseHelper.getPointList(trackName, false, false);
 			cWpt.moveToNext();
 			while (!cWpt.isAfterLast()) {
 				GeoPoint p = new GeoPoint(

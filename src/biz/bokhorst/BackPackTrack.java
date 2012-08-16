@@ -523,7 +523,7 @@ public class BackPackTrack extends Activity implements
 		final List<String> lstName = new ArrayList<String>();
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
 				Preferences.PREF_TRACKNAME_DEFAULT);
-		Cursor c = databaseHelper.getPointList(trackName, true);
+		Cursor c = databaseHelper.getPointList(trackName, true, true);
 		c.moveToNext();
 		while (!c.isAfterLast()) {
 			lstId.add(c.getLong(c.getColumnIndex("ID")));
@@ -715,8 +715,8 @@ public class BackPackTrack extends Activity implements
 		else
 			folder = context.getFilesDir();
 		gpxFileName = folder + "/" + trackName + ".gpx";
-		Cursor cWpt = databaseHelper.getPointList(trackName, true);
-		Cursor cTP = databaseHelper.getPointList(trackName, false);
+		Cursor cWpt = databaseHelper.getPointList(trackName, true, false);
+		Cursor cTP = databaseHelper.getPointList(trackName, false, false);
 		GPXFileWriter.writeGpxFile(trackName, cTP, cWpt, new File(gpxFileName));
 		return gpxFileName;
 	}
