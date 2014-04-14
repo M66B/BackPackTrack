@@ -75,6 +75,7 @@ public class BackPackTrack extends Activity implements
 	public static final int MSG_LOCATION = 4;
 	public static final int MSG_UPDATETRACK = 5;
 	public static final int MSG_AUTOUPDATE = 6;
+	public static final int MSG_ACTIVITY = 7;
 
 	// Helpers
 	private ConnectivityManager connectivityManager = null;
@@ -113,6 +114,8 @@ public class BackPackTrack extends Activity implements
 				updateTrack();
 			else if (msg.what == MSG_AUTOUPDATE)
 				AutoUpdate();
+			else if (msg.what == MSG_ACTIVITY)
+				showActivity(b.getString("Name"), b.getInt("Confidence"));
 		}
 	}
 
@@ -131,6 +134,7 @@ public class BackPackTrack extends Activity implements
 	private TextView txtSpeed;
 	private TextView txtAccuracy;
 	private TextView txtTime;
+	private TextView txtActivity;
 	private TextView txtTrackName;
 	private TextView txtVersion;
 	private Button btnStart;
@@ -182,6 +186,7 @@ public class BackPackTrack extends Activity implements
 		txtSpeed = (TextView) findViewById(R.id.txtSpeed);
 		txtAccuracy = (TextView) findViewById(R.id.txtAccuracy);
 		txtTime = (TextView) findViewById(R.id.txtTime);
+		txtActivity = (TextView) findViewById(R.id.txtActivity);
 		txtTrackName = (TextView) findViewById(R.id.txtTrackName);
 		txtVersion = (TextView) findViewById(R.id.txtVersion);
 		btnStart = (Button) findViewById(R.id.btnStart);
@@ -407,6 +412,10 @@ public class BackPackTrack extends Activity implements
 			txtTime.setText(String.format("%s",
 					DATETIME_FORMATTER.format(new Date(location.getTime()))));
 		}
+	}
+
+	private void showActivity(String name, int confidence) {
+		txtAccuracy.setText(String.format("%s %d %%", name, confidence));
 	}
 
 	// Helper make waypoint

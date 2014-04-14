@@ -75,7 +75,15 @@
 			<TextView android:text="@string/na" android:layout_width="wrap_content"
 				android:layout_height="wrap_content" android:id="@+id/txtTime"></TextView>
 		</TableRow>
-		<TableRow android:id="@+id/tableRow1A" android:layout_width="fill_parent"
+		<TableRow android:id="@+id/tableRow20" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<TextView android:text="@string/Activity" android:id="@+id/lblActivity"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textStyle="bold" android:paddingRight="5dip"></TextView>
+			<TextView android:text="@string/na" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:id="@+id/txtActivity"></TextView>
+		</TableRow>
+				<TableRow android:id="@+id/tableRow1A" android:layout_width="fill_parent"
 			android:layout_height="wrap_content">
 			<TextView android:text="@string/TrackName" android:id="@+id/lblTrackName"
 				android:layout_width="wrap_content" android:layout_height="wrap_content"

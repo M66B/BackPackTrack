@@ -23,6 +23,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
+import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
+import com.google.android.gms.location.ActivityRecognitionClient;
+import com.google.android.gms.location.ActivityRecognitionResult;
+import com.google.android.gms.location.DetectedActivity;
+
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
@@ -46,11 +53,12 @@ import android.os.Messenger;
 import android.os.SystemClock;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 import android.os.PowerManager;
 
 public class BPTService extends IntentService implements LocationListener,
-		GpsStatus.Listener {
+		GpsStatus.Listener, ConnectionCallbacks, OnConnectionFailedListener {
 	// Messages
 	public static final int MSG_REPLY = 1;
 	public static final int MSG_WAYPOINT = 2;
@@ -69,6 +77,7 @@ public class BPTService extends IntentService implements LocationListener,
 	private AlarmManager alarmManager = null;
 	private PendingIntent pendingAlarmIntent = null;
 	private BPTAlarmReceiver alarmReceiver = null;
+	private ActivityRecognitionClient mActivityRecognitionClient;
 
 	// State
 	private boolean bound = false;
@@ -97,6 +106,37 @@ public class BPTService extends IntentService implements LocationListener,
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
+		if (ActivityRecognitionResult.hasResult(intent)) {
+			ActivityRecognitionResult result = ActivityRecognitionResult
+					.extractResult(intent);
+			DetectedActivity mostProbableActivity = result
+					.getMostProbableActivity();
+			int confidence = mostProbableActivity.getConfidence();
+			int activityType = mostProbableActivity.getType();
+			String activityName = getNameFromType(activityType);
+			Log.w("BPT", "Activity=" + activityName + " confidence="
+					+ confidence);
+			sendActivity(activityName, confidence);
+		} else
+			Log.w("BPT", "action=" + intent.getAction());
+	}
+
+	private String getNameFromType(int activityType) {
+		switch (activityType) {
+		case DetectedActivity.IN_VEHICLE:
+			return "in_vehicle";
+		case DetectedActivity.ON_BICYCLE:
+			return "on_bicycle";
+		case DetectedActivity.ON_FOOT:
+			return "on_foot";
+		case DetectedActivity.STILL:
+			return "still";
+		case DetectedActivity.UNKNOWN:
+			return "unknown";
+		case DetectedActivity.TILTING:
+			return "tilting";
+		}
+		return "unknown";
 	}
 
 	// Handle incoming messages
@@ -157,6 +197,10 @@ public class BPTService extends IntentService implements LocationListener,
 		alarmReceiver = new BPTAlarmReceiver();
 		context.registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
 
+		mActivityRecognitionClient = new ActivityRecognitionClient(this, this,
+				this);
+		mActivityRecognitionClient.connect();
+
 		bound = true;
 		return serverMessenger.getBinder();
 	}
@@ -186,9 +230,32 @@ public class BPTService extends IntentService implements LocationListener,
 			preferences = null;
 			databaseHelper = null;
 			locationManager = null;
+
+			mActivityRecognitionClient.disconnect();
+
+			bound = false;
 		}
 
 		return super.onUnbind(intent);
+	}
+
+	@Override
+	public void onConnectionFailed(ConnectionResult arg0) {
+	}
+
+	@Override
+	public void onConnected(Bundle arg0) {
+		Log.w("BPT", mActivityRecognitionClient.getClass().getName()
+				+ " connected");
+		Intent intent = new Intent(this, BPTService.class);
+		PendingIntent callbackIntent = PendingIntent.getService(this, 0,
+				intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		mActivityRecognitionClient.requestActivityUpdates(3000, callbackIntent);
+	}
+
+	@Override
+	public void onDisconnected() {
+		mActivityRecognitionClient = null;
 	}
 
 	// Helper start location
@@ -363,7 +430,8 @@ public class BPTService extends IntentService implements LocationListener,
 			// User feedback
 			sendStage(String.format(getString(R.string.StageFixTimeout),
 					TIME_FORMATTER.format(nextTrackTime)));
-			sendLocation(location);
+			if (location != null)
+				sendLocation(location);
 
 			if (hasWakeLock) {
 				hasWakeLock = false;
@@ -485,6 +553,13 @@ public class BPTService extends IntentService implements LocationListener,
 		b.putFloat("Accuracy", location.getAccuracy());
 		b.putLong("Time", location.getTime());
 		sendMessage(BackPackTrack.MSG_LOCATION, b);
+	}
+
+	private void sendActivity(String name, int confidence) {
+		Bundle b = new Bundle();
+		b.putString("Name", name);
+		b.putInt("Confidence", confidence);
+		sendMessage(BackPackTrack.MSG_ACTIVITY, b);
 	}
 
 	private void sendMessage(int type, Bundle data) {
