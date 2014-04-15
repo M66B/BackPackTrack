@@ -415,7 +415,7 @@ public class BackPackTrack extends Activity implements
 	}
 
 	private void showActivity(String name, int confidence) {
-		txtAccuracy.setText(String.format("%s %d %%", name, confidence));
+		txtActivity.setText(String.format("%s %d %%", name, confidence));
 	}
 
 	// Helper make waypoint

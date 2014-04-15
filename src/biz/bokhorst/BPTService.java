@@ -53,7 +53,6 @@ import android.os.Messenger;
 import android.os.SystemClock;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.Toast;
 import android.os.PowerManager;
 
@@ -114,11 +113,9 @@ public class BPTService extends IntentService implements LocationListener,
 			int confidence = mostProbableActivity.getConfidence();
 			int activityType = mostProbableActivity.getType();
 			String activityName = getNameFromType(activityType);
-			Log.w("BPT", "Activity=" + activityName + " confidence="
-					+ confidence);
 			sendActivity(activityName, confidence);
 		} else
-			Log.w("BPT", "action=" + intent.getAction());
+			sendActivity(intent.getAction(), 100);
 	}
 
 	private String getNameFromType(int activityType) {
@@ -197,6 +194,7 @@ public class BPTService extends IntentService implements LocationListener,
 		alarmReceiver = new BPTAlarmReceiver();
 		context.registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
 
+		sendActivity("Connecting", 100);
 		mActivityRecognitionClient = new ActivityRecognitionClient(this, this,
 				this);
 		mActivityRecognitionClient.connect();
@@ -231,9 +229,10 @@ public class BPTService extends IntentService implements LocationListener,
 			databaseHelper = null;
 			locationManager = null;
 
-			mActivityRecognitionClient.disconnect();
-
-			bound = false;
+			if (mActivityRecognitionClient.isConnected()) {
+				sendActivity("Disconnecting", 100);
+				mActivityRecognitionClient.disconnect();
+			}
 		}
 
 		return super.onUnbind(intent);
@@ -241,20 +240,22 @@ public class BPTService extends IntentService implements LocationListener,
 
 	@Override
 	public void onConnectionFailed(ConnectionResult arg0) {
+		sendActivity("Connection failed", 100);
 	}
 
 	@Override
 	public void onConnected(Bundle arg0) {
-		Log.w("BPT", mActivityRecognitionClient.getClass().getName()
-				+ " connected");
+		sendActivity("Connected", 100);
 		Intent intent = new Intent(this, BPTService.class);
 		PendingIntent callbackIntent = PendingIntent.getService(this, 0,
 				intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		mActivityRecognitionClient.requestActivityUpdates(3000, callbackIntent);
+		mActivityRecognitionClient
+				.requestActivityUpdates(30000, callbackIntent);
 	}
 
 	@Override
 	public void onDisconnected() {
+		sendActivity("Disconnected", 100);
 		mActivityRecognitionClient = null;
 	}
 
@@ -496,19 +497,21 @@ public class BPTService extends IntentService implements LocationListener,
 	@Override
 	public void onGpsStatusChanged(int event) {
 		if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
-			GpsStatus status = locationManager.getGpsStatus(null);
-			if (status != null) {
-				int fix = 0;
-				int count = 0;
-				Iterable<GpsSatellite> sats = status.getSatellites();
-				Iterator<GpsSatellite> satI = sats.iterator();
-				while (satI.hasNext()) {
-					GpsSatellite gpssatellite = satI.next();
-					count++;
-					if (gpssatellite.usedInFix())
-						fix++;
+			if (locationManager != null) {
+				GpsStatus status = locationManager.getGpsStatus(null);
+				if (status != null) {
+					int fix = 0;
+					int count = 0;
+					Iterable<GpsSatellite> sats = status.getSatellites();
+					Iterator<GpsSatellite> satI = sats.iterator();
+					while (satI.hasNext()) {
+						GpsSatellite gpssatellite = satI.next();
+						count++;
+						if (gpssatellite.usedInFix())
+							fix++;
+					}
+					sendSatellites(fix, count);
 				}
-				sendSatellites(fix, count);
 			}
 
 		} else {
