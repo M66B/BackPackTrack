@@ -45,6 +45,7 @@ public class Preferences extends PreferenceActivity {
 	public static final boolean PREF_BLOGAUTOUPDATE_DEFAULT = false;
 
 	public static final String PREF_TRACKNAME = "TrackName";
+	public static final String PREF_ACTIVITY = "ActivityRecognition";
 	public static final String PREF_TRACKINTERVAL = "TrackInterval";
 	public static final String PREF_FIXTIMEOUT = "FixTimeout";
 	public static final String PREF_MAXWAIT = "MaxWait";
@@ -53,6 +54,7 @@ public class Preferences extends PreferenceActivity {
 	public static final String PREF_IMPERIAL = "Imperial";
 
 	public static final String PREF_TRACKNAME_DEFAULT = "Journey";
+	public static final String PREF_ACTIVITY_DEFAULT = "15";
 	public static final String PREF_TRACKINTERVAL_DEFAULT = "30";
 	public static final String PREF_FIXTIMEOUT_DEFAULT = "300";
 	public static final String PREF_MAXWAIT_DEFAULT = "60";

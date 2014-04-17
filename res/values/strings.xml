@@ -55,5 +55,16 @@
     <string name="StageTrackWait" formatted="false">Tracking until %s %dm</string>
     <string name="StageFixTimeout">Fix timeout, next %s</string>
     <string name="StageTracked">Tracked, next %s</string>
+    <string name="in_vehicle">In vehicle</string>
+    <string name="on_bicycle">On bicycle</string>
+    <string name="on_foot">On foot</string>
+    <string name="still">Still</string>
+    <string name="unknown">Unknown</string>
+    <string name="tilting">Tilting</string>
+    <string name="connecting">Connecting</string>
+    <string name="connected">Connected</string>
+    <string name="disconnecting">Disconnecting</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="failed">Failed</string>
 
 </resources>

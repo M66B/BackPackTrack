@@ -85,6 +85,7 @@ public class BPTService extends IntentService implements LocationListener,
 	private boolean bound = false;
 	private boolean hasWakeLock = false;
 	private boolean waypoint = false;
+	private boolean should = false;
 	private boolean locating = false;
 	private boolean locationwait = false;
 	private Location bestLocation = null;
@@ -117,26 +118,27 @@ public class BPTService extends IntentService implements LocationListener,
 			int activityType = mostProbableActivity.getType();
 			String activityName = getNameFromType(activityType);
 			sendActivity(activityName, confidence);
-		} else
-			sendActivity(intent.getAction(), 100);
+		}
 	}
 
 	private String getNameFromType(int activityType) {
+		should = (activityType != DetectedActivity.STILL);
+
 		switch (activityType) {
 		case DetectedActivity.IN_VEHICLE:
-			return "in_vehicle";
+			return getString(R.string.in_vehicle);
 		case DetectedActivity.ON_BICYCLE:
-			return "on_bicycle";
+			return getString(R.string.on_bicycle);
 		case DetectedActivity.ON_FOOT:
-			return "on_foot";
+			return getString(R.string.on_foot);
 		case DetectedActivity.STILL:
-			return "still";
+			return getString(R.string.still);
 		case DetectedActivity.UNKNOWN:
-			return "unknown";
+			return getString(R.string.unknown);
 		case DetectedActivity.TILTING:
-			return "tilting";
+			return getString(R.string.tilting);
 		}
-		return "unknown";
+		return getString(R.string.unknown);
 	}
 
 	// Handle incoming messages
@@ -205,7 +207,7 @@ public class BPTService extends IntentService implements LocationListener,
 		alarmReceiver = new BPTAlarmReceiver();
 		context.registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
 
-		sendActivity("Connecting", 100);
+		sendActivity("Connecting", -1);
 		mActivityRecognitionClient = new ActivityRecognitionClient(this, this,
 				this);
 		mActivityRecognitionClient.connect();
@@ -241,9 +243,11 @@ public class BPTService extends IntentService implements LocationListener,
 			locationManager = null;
 
 			if (mActivityRecognitionClient.isConnected()) {
-				sendActivity("Disconnecting", 100);
+				sendActivity(getString(R.string.disconnecting), -1);
 				mActivityRecognitionClient.disconnect();
 			}
+
+			bound = false;
 		}
 
 		return super.onUnbind(intent);
@@ -251,28 +255,31 @@ public class BPTService extends IntentService implements LocationListener,
 
 	@Override
 	public void onConnectionFailed(ConnectionResult arg0) {
-		sendActivity("Connection failed", 100);
+		sendActivity(getString(R.string.failed), -1);
 	}
 
 	@Override
 	public void onConnected(Bundle arg0) {
-		sendActivity("Connected", 100);
+		sendActivity(getString(R.string.connected), -1);
+
+		long interval = Integer.parseInt(preferences.getString(
+				Preferences.PREF_ACTIVITY, Preferences.PREF_ACTIVITY_DEFAULT)) * 60L * 1000L;
 		Intent intent = new Intent(this, BPTService.class);
 		PendingIntent callbackIntent = PendingIntent.getService(this, 0,
 				intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		mActivityRecognitionClient
-				.requestActivityUpdates(30000, callbackIntent);
+		mActivityRecognitionClient.requestActivityUpdates(interval,
+				callbackIntent);
 	}
 
 	@Override
 	public void onDisconnected() {
-		sendActivity("Disconnected", 100);
+		sendActivity(getString(R.string.disconnected), -1);
 		mActivityRecognitionClient = null;
 	}
 
 	// Helper start location
 	protected void startLocating() {
-		if (!locating) {
+		if (!locating && should) {
 			locating = true;
 
 			// Start waiting for fix
@@ -375,7 +382,6 @@ public class BPTService extends IntentService implements LocationListener,
 			long interval = Integer.parseInt(preferences.getString(
 					Preferences.PREF_TRACKINTERVAL,
 					Preferences.PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
-			// taskHandler.postDelayed(PeriodicTrackTask, interval);
 			Intent alarmIntent = new Intent("BPT_ALARM");
 			Context context = getApplicationContext();
 			pendingAlarmIntent = PendingIntent.getBroadcast(context, 0,

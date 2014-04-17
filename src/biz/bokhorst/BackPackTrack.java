@@ -414,7 +414,10 @@ public class BackPackTrack extends Activity implements
 	}
 
 	private void showActivity(String name, int confidence) {
-		txtActivity.setText(String.format("%s %d %%", name, confidence));
+		if (confidence >= 0)
+			txtActivity.setText(String.format("%s %d %%", name, confidence));
+		else
+			txtActivity.setText(name);
 	}
 
 	// Helper make waypoint

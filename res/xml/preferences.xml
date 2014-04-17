@@ -43,6 +43,11 @@
             android:summary="Create track point every xxx minutes"
             android:title="Track interval" />
         <EditTextPreference
+            android:defaultValue="15"
+            android:key="ActivityRecognition"
+            android:summary="Activity recognition every xxx minutes"
+            android:title="Activity recognition interval" />
+        <EditTextPreference
             android:defaultValue="300"
             android:key="FixTimeout"
             android:summary="Wait for GPS fix for xxx seconds"
