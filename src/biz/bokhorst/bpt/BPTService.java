@@ -88,7 +88,7 @@ public class BPTService extends IntentService implements LocationListener,
 	private boolean bound = false;
 	private boolean hasWakeLock = false;
 	private boolean waypoint = false;
-	private boolean should = false;
+	private boolean should = true;
 	private boolean locating = false;
 	private boolean locationwait = false;
 	private Location bestLocation = null;
