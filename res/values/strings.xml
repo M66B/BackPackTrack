@@ -48,7 +48,6 @@
     <string name="written">GPX written to %s</string>
     <string name="Upload">Upload</string>
     <string name="Uploaded">GPX uploaded to %s</string>
-    <string name="Map">Map</string>
     <string name="Clear">Clear</string>
     <string name="Settings">Settings</string>
     <string name="Nolocation">No location</string>
@@ -56,10 +55,5 @@
     <string name="StageTrackWait" formatted="false">Tracking until %s %dm</string>
     <string name="StageFixTimeout">Fix timeout, next %s</string>
     <string name="StageTracked">Tracked, next %s</string>
-    <string name="Satellite">Satellite</string>
-    <string name="StreetView">StreetView</string>
-    <string name="Traffic">Traffic</string>
-    <string name="mvApikeyDebug">0fHCwXLhxjaIfExOIcGB-6h9liWNcM1HTSZ1OLw</string>
-    <string name="mvApikeyRelease">0fHCwXLhxjaIKIiPxJyumXgvQeLmxKMh29qJ3-w</string>
 
 </resources>

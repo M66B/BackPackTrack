@@ -275,10 +275,6 @@ public class BackPackTrack extends Activity implements
 			updateTrack();
 			handler.post(UploadTask);
 			return true;
-		case R.id.menuMap:
-			Intent mapIntent = new Intent(getBaseContext(), BPTMap.class);
-			startActivity(mapIntent);
-			return true;
 		case R.id.menuClear:
 			clearTrack();
 			return true;
