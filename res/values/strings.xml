@@ -63,7 +63,6 @@
     <string name="tilting">Tilting</string>
     <string name="connecting">Connecting</string>
     <string name="connected">Connected</string>
-    <string name="disconnecting">Disconnecting</string>
     <string name="disconnected">Disconnected</string>
     <string name="failed">Failed</string>
 

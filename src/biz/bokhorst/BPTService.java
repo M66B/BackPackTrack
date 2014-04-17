@@ -79,14 +79,14 @@ public class BPTService extends IntentService implements LocationListener,
 	private AlarmManager alarmManager = null;
 	private PendingIntent pendingAlarmIntent = null;
 	private BPTAlarmReceiver alarmReceiver = null;
-	private ActivityRecognitionClient activityRecognitionClient;
-	private PendingIntent activityCallbackIntent;
+	private ActivityRecognitionClient activityRecognitionClient = null;
+	private PendingIntent activityCallbackIntent = null;
 
 	// State
 	private boolean bound = false;
 	private boolean hasWakeLock = false;
 	private boolean waypoint = false;
-	private boolean should = true;
+	private boolean should = false;
 	private boolean locating = false;
 	private boolean locationwait = false;
 	private Location bestLocation = null;
@@ -209,8 +209,6 @@ public class BPTService extends IntentService implements LocationListener,
 		context.registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
 
 		sendActivity("Connecting", -1);
-		activityCallbackIntent = PendingIntent.getService(this, 0, new Intent(
-				this, BPTService.class), PendingIntent.FLAG_UPDATE_CURRENT);
 		activityRecognitionClient = new ActivityRecognitionClient(this, this,
 				this);
 		activityRecognitionClient.connect();
@@ -245,13 +243,16 @@ public class BPTService extends IntentService implements LocationListener,
 			databaseHelper = null;
 			locationManager = null;
 
-			if (activityRecognitionClient.isConnected()) {
-				sendActivity(getString(R.string.disconnecting), -1);
+			if (activityCallbackIntent != null) {
 				activityRecognitionClient
 						.removeActivityUpdates(activityCallbackIntent);
+				activityCallbackIntent = null;
+			}
+
+			if (activityRecognitionClient.isConnected()) {
 				activityRecognitionClient.disconnect();
 				activityRecognitionClient = null;
-				activityCallbackIntent = null;
+				sendActivity(getString(R.string.disconnected), -1);
 			}
 
 			bound = false;
@@ -272,6 +273,8 @@ public class BPTService extends IntentService implements LocationListener,
 		long interval = Integer.parseInt(preferences.getString(
 				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL,
 				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT)) * 1000L;
+		activityCallbackIntent = PendingIntent.getService(this, 0, new Intent(
+				this, BPTService.class), PendingIntent.FLAG_UPDATE_CURRENT);
 		activityRecognitionClient.requestActivityUpdates(interval,
 				activityCallbackIntent);
 	}
@@ -279,6 +282,7 @@ public class BPTService extends IntentService implements LocationListener,
 	@Override
 	public void onDisconnected() {
 		sendActivity(getString(R.string.disconnected), -1);
+		activityCallbackIntent = null;
 		activityRecognitionClient = null;
 	}
 
