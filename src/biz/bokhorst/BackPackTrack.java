@@ -251,6 +251,10 @@ public class BackPackTrack extends Activity implements
 				geocode();
 			}
 		});
+
+		Bundle extras = getIntent().getExtras();
+		if (extras != null && extras.containsKey("Boot"))
+			start();
 	}
 
 	// Wire options menu

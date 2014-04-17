@@ -38,9 +38,13 @@
             android:title="Track name list" />
 
         <CheckBoxPreference
+            android:key="AutoStart"
+            android:summary="Auto start after boot"
+            android:title="Auto start" />
+        <CheckBoxPreference
             android:key="ActivityRecognition"
-            android:summary="Activity recognition"
-            android:title="Use activity recognition" />
+            android:summary="Use activity recognition"
+            android:title="Activity recognition" />
 
         <EditTextPreference
             android:defaultValue="15"
