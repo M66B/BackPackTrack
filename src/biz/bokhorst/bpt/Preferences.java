@@ -1,4 +1,4 @@
-package biz.bokhorst;
+package biz.bokhorst.bpt;
 
 /*
  Copyright 2011-2014 Marcel Bokhorst
@@ -21,6 +21,8 @@ package biz.bokhorst;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import biz.bokhorst.bpt.R;
 
 import android.content.SharedPreferences;
 import android.database.Cursor;

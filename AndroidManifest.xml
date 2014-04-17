@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="biz.bokhorst"
+    package="biz.bokhorst.bpt"
     android:versionCode="12"
     android:versionName="0.6.4" >
 

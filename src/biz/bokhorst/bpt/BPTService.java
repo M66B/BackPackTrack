@@ -1,4 +1,4 @@
-package biz.bokhorst;
+package biz.bokhorst.bpt;
 
 /*
  Copyright 2011-2014 Marcel Bokhorst
@@ -23,6 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
+
+import biz.bokhorst.bpt.R;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;

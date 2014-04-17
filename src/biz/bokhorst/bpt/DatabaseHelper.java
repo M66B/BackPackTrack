@@ -1,4 +1,4 @@
-package biz.bokhorst;
+package biz.bokhorst.bpt;
 
 /*
  Copyright 2011-2014 Marcel Bokhorst

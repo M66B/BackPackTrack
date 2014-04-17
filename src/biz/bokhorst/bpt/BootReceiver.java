@@ -1,4 +1,4 @@
-package biz.bokhorst;
+package biz.bokhorst.bpt;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

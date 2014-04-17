@@ -1,4 +1,4 @@
-package biz.bokhorst;
+package biz.bokhorst.bpt;
 
 /*
  Copyright 2011-2014 Marcel Bokhorst
@@ -65,6 +65,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.preference.PreferenceManager;
+import biz.bokhorst.bpt.R;
 
 import org.xmlrpc.android.XMLRPCClient;
 
