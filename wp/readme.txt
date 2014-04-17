@@ -3,7 +3,7 @@ Contributors: Marcel Bokhorst, M66B
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AJSBB7DGNA3MJ&lc=US&item_name=BackPackTrack%20for%20Android&item_number=Marcel%20Bokhorst&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted
 Tags: android, gpx, post, posts, maps, google, google maps, routes, tracks, geocode, geotag
 Requires at least: 3.1
-Tested up to: 3.3.2
+Tested up to: 3.9
 Stable tag: 0.6
 
 WordPress plugin and open source Android application to track and display your journeys
@@ -23,19 +23,11 @@ During or after your journey, you can create and upload a GPX file to your WordP
 The first upload creates a *draft* post with the title of your journey and a hyperlink to the generated GPX file.
 Subsequent uploads will only update the GPX file.
 
-The GPX file can be displayed as a map using the [XML Google Maps](http://wordpress.org/extend/plugins/xml-google-maps/ "XML Google Maps") WordPress plugin.
-
 The Android application is designed for low power and offline use.
 If you want to continuously track your position, you can better use [My Tracks](http://mytracks.appspot.com/ "My Tracks"),
 although this application doesn't have an option to upload GPX files to your weblog.
 
-[Review](http://jaysjourneys.com/2012/02/09/backpacktrack/ "Review")
-
-If you find this plugin useful, please rate it accordingly.
-If you rate this plugin low, please [let me know why](http://blog.bokhorst.biz/contact/ "Marcel Bokhorst").
 Please report any issue you have with this plugin [here](https://github.com/M66B/BackPackTrack/issues "github - issues"), so I can at least try to fix it.
-
-See [my other plugins](http://wordpress.org/extend/plugins/profile/m66b "Marcel Bokhorst").
 
 == Installation ==
 

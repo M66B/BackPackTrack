@@ -24,19 +24,11 @@ During or after your journey, you can create and upload a GPX file to your WordP
 The first upload creates a *draft* post with the title of your journey and a hyperlink to the generated GPX file.
 Subsequent uploads will only update the GPX file.
 
-The GPX file can be displayed as a map using the [XML Google Maps](http://wordpress.org/extend/plugins/xml-google-maps/ "XML Google Maps") WordPress plugin.
-
 The Android application is designed for low power and offline use.
 If you want to continuously track your position, you can better use [My Tracks](http://mytracks.appspot.com/ "My Tracks"),
 although this application doesn't have an option to upload GPX files to your weblog.
 
-[Review](http://jaysjourneys.com/2012/02/09/backpacktrack/ "Review")
-
-If you find this plugin useful, please rate it accordingly.
-If you rate this plugin low, please [let me know why](http://blog.bokhorst.biz/contact/ "Marcel Bokhorst").
 Please report any issue you have with this plugin [here](https://github.com/M66B/BackPackTrack/issues "github - issues"), so I can at least try to fix it.
-
-See [my other plugins](http://wordpress.org/extend/plugins/profile/m66b "Marcel Bokhorst").
 
 Installation
 ------------

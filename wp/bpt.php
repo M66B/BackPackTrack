@@ -9,7 +9,7 @@ Author URI: http://blog.bokhorst.biz/about/
 */
 
 /*
-	Copyright 2011, 2012 Marcel Bokhorst
+	Copyright 2011-2014 Marcel Bokhorst
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ Author URI: http://blog.bokhorst.biz/about/
 */
 
 add_filter('xmlrpc_methods', 'bpt_xmlrpc_methods');
-add_filter('plugin_action_links', 'bpt_action_links', 10, 2);
 add_filter('upload_mimes', 'bpt_upload_mimes');
 
 function bpt_xmlrpc_methods($methods) {
@@ -126,14 +125,6 @@ function bpt_upload($args) {
 function bpt_upload_mimes($mimes) {
 	$mimes['gpx'] = 'text/xml';
 	return $mimes;
-}
-
-function bpt_action_links($links, $file) {
-	if ($file == plugin_basename(__FILE__)) {
-		$url = 'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AJSBB7DGNA3MJ&lc=US&item_name=BackPackTrack%20for%20Android&item_number=Marcel%20Bokhorst&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted';
-		$links[] = '<a href="' . $url . '" target="_blank">Donate</a>';
-	}
-	return $links;
 }
 
 ?>
