@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: BackPackTrack
-Plugin URI: http://wordpress.org/extend/plugins/backpacktrack-for-android/
+Plugin URI: https://github.com/M66B/BackPackTrack
 Description: BackPackTrack XML-RPC methods
-Version: 0.6
+Version: 0.7
 Author: Marcel Bokhorst
 Author URI: http://blog.bokhorst.biz/about/
 */
