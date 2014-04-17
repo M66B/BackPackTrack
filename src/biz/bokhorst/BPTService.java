@@ -263,6 +263,7 @@ public class BPTService extends IntentService implements LocationListener,
 
 	@Override
 	public void onConnectionFailed(ConnectionResult arg0) {
+		should = true;
 		sendActivity(getString(R.string.failed), -1);
 	}
 
@@ -281,9 +282,10 @@ public class BPTService extends IntentService implements LocationListener,
 
 	@Override
 	public void onDisconnected() {
-		sendActivity(getString(R.string.disconnected), -1);
+		should = true;
 		activityCallbackIntent = null;
 		activityRecognitionClient = null;
+		sendActivity(getString(R.string.disconnected), -1);
 	}
 
 	// Helper start location
