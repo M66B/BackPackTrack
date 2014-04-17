@@ -263,7 +263,8 @@ public class BPTService extends IntentService implements LocationListener,
 		sendActivity(getString(R.string.connected), -1);
 
 		long interval = Integer.parseInt(preferences.getString(
-				Preferences.PREF_ACTIVITY, Preferences.PREF_ACTIVITY_DEFAULT)) * 60L * 1000L;
+				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL,
+				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT)) * 60L * 1000L;
 		Intent intent = new Intent(this, BPTService.class);
 		PendingIntent callbackIntent = PendingIntent.getService(this, 0,
 				intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -279,7 +280,11 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// Helper start location
 	protected void startLocating() {
-		if (!locating && should) {
+		boolean use = preferences.getBoolean(
+				Preferences.PREF_ACTIVITYRECOGNITION,
+				Preferences.PREF_ACTIVITYRECOGNITION_DEFAULT);
+
+		if (!locating && (use ? should : true)) {
 			locating = true;
 
 			// Start waiting for fix
