@@ -1,7 +1,7 @@
 package biz.bokhorst;
 
 /*
- Copyright 2011, 2012 Marcel Bokhorst
+ Copyright 2011-2014 Marcel Bokhorst
  All Rights Reserved
 
  This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import android.net.NetworkInfo;
@@ -39,6 +40,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.IBinder;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.view.Menu;
@@ -83,9 +85,10 @@ public class BackPackTrack extends Activity implements
 	private SharedPreferences preferences = null;
 	private Handler handler = null;
 	private static final SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat(
-			"yyyy-MM-dd HH:mm:ss");
+			"yyyy-MM-dd HH:mm:ss", Locale.getDefault());
 
 	// Incoming messages handler
+	@SuppressLint("HandlerLeak")
 	private class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
@@ -361,8 +364,8 @@ public class BackPackTrack extends Activity implements
 	private void updateTrack() {
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
 				Preferences.PREF_TRACKNAME_DEFAULT);
-		String msg = String.format("%s (%d/%d)", trackName,
-				databaseHelper.countPoints(trackName, true),
+		String msg = String.format(Locale.getDefault(), "%s (%d/%d)",
+				trackName, databaseHelper.countPoints(trackName, true),
 				databaseHelper.countPoints(trackName, false));
 		txtTrackName.setText(msg);
 	}

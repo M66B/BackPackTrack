@@ -1,7 +1,7 @@
 package biz.bokhorst;
 
 /*
- Copyright 2011, 2012 Marcel Bokhorst
+ Copyright 2011-2014 Marcel Bokhorst
  All Rights Reserved
 
  This program is free software; you can redistribute it and/or modify
@@ -52,8 +52,6 @@ import com.google.android.maps.Overlay;
 public class BPTMap extends MapActivity {
 
 	private boolean satellite = false;
-	private boolean streetview = false;
-	private boolean traffic = false;
 	private MapView mapView;
 	private DatabaseHelper databaseHelper;
 	private SharedPreferences preferences = null;
@@ -80,15 +78,15 @@ public class BPTMap extends MapActivity {
 		mapView = new MapView(this, apikey);
 		mapView.setClickable(true);
 		MapView.LayoutParams mvlp = new MapView.LayoutParams(
-				ViewGroup.LayoutParams.FILL_PARENT,
-				ViewGroup.LayoutParams.FILL_PARENT, 0, 0,
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.MATCH_PARENT, 0, 0,
 				MapView.LayoutParams.CENTER);
 		mapView.setLayoutParams(mvlp);
 
 		// Create layout
 		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.FILL_PARENT,
-				RelativeLayout.LayoutParams.FILL_PARENT);
+				RelativeLayout.LayoutParams.MATCH_PARENT,
+				RelativeLayout.LayoutParams.MATCH_PARENT);
 		RelativeLayout rl = new RelativeLayout(this);
 		rl.setLayoutParams(lp);
 		rl.addView(mapView);
@@ -102,8 +100,6 @@ public class BPTMap extends MapActivity {
 		// Get view
 		mapView.setBuiltInZoomControls(true);
 		mapView.setSatellite(satellite);
-		mapView.setStreetView(streetview);
-		mapView.setTraffic(traffic);
 
 		// Get map bounds
 		double minLat = Double.MAX_VALUE, maxLat = Double.MIN_VALUE;
@@ -170,20 +166,6 @@ public class BPTMap extends MapActivity {
 		case R.id.menuSatellite:
 			satellite = !satellite;
 			mapView.setSatellite(satellite);
-			mapView.invalidate();
-			return true;
-		case R.id.menuStreetView:
-			streetview = !streetview;
-			mapView.setStreetView(streetview);
-			if (streetview)
-				traffic = false;
-			mapView.invalidate();
-			return true;
-		case R.id.menuTraffic:
-			traffic = !traffic;
-			mapView.setTraffic(traffic);
-			if (traffic)
-				streetview = false;
 			mapView.invalidate();
 			return true;
 		default:

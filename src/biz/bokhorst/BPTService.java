@@ -1,7 +1,7 @@
 package biz.bokhorst;
 
 /*
- Copyright 2011, 2012 Marcel Bokhorst
+ Copyright 2011-2014 Marcel Bokhorst
  All Rights Reserved
 
  This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package biz.bokhorst;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
@@ -30,6 +31,7 @@ import com.google.android.gms.location.ActivityRecognitionClient;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
@@ -53,6 +55,7 @@ import android.os.Messenger;
 import android.os.SystemClock;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 import android.os.PowerManager;
 
@@ -63,7 +66,7 @@ public class BPTService extends IntentService implements LocationListener,
 	public static final int MSG_WAYPOINT = 2;
 
 	private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(
-			"HH:mm:ss");
+			"HH:mm:ss", Locale.getDefault());
 
 	// Helpers
 	private LocationManager locationManager = null;
@@ -137,6 +140,7 @@ public class BPTService extends IntentService implements LocationListener,
 	}
 
 	// Handle incoming messages
+	@SuppressLint("HandlerLeak")
 	private class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
@@ -154,7 +158,8 @@ public class BPTService extends IntentService implements LocationListener,
 		}
 	}
 
-	final Messenger serverMessenger = new Messenger(new IncomingHandler());
+	private final Messenger serverMessenger = new Messenger(
+			new IncomingHandler());
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -171,10 +176,16 @@ public class BPTService extends IntentService implements LocationListener,
 		PendingIntent intentBack = PendingIntent.getActivity(context, 0,
 				toLaunch, PendingIntent.FLAG_UPDATE_CURRENT);
 
-		Notification notification = new Notification(R.drawable.icon,
-				getText(R.string.Running), System.currentTimeMillis());
-		notification.setLatestEventInfo(context, getText(R.string.app_name),
-				getText(R.string.Running), intentBack);
+		// Build notification
+		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(
+				this);
+		notificationBuilder.setSmallIcon(R.drawable.icon);
+		notificationBuilder.setContentTitle(getString(R.string.app_name));
+		notificationBuilder.setContentText(getString(R.string.Running));
+		notificationBuilder.setContentIntent(intentBack);
+		notificationBuilder.setWhen(System.currentTimeMillis());
+		notificationBuilder.setAutoCancel(true);
+		Notification notification = notificationBuilder.build();
 
 		// Start foreground service
 		// Requires API level 5 (Android 2.0)
@@ -458,7 +469,7 @@ public class BPTService extends IntentService implements LocationListener,
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
 				Preferences.PREF_TRACKNAME_DEFAULT);
 		int count = databaseHelper.countPoints(trackName, true);
-		String name = String.format("%03d", count + 1);
+		String name = String.format(Locale.getDefault(), "%03d", count + 1);
 		databaseHelper.insertPoint(trackName, null, location, name, true);
 
 		// User feedback

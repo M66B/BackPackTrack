@@ -1,7 +1,7 @@
 package biz.bokhorst;
 
 /*
- Copyright 2011, 2012 Marcel Bokhorst
+ Copyright 2011-2014 Marcel Bokhorst
  All Rights Reserved
 
  This program is free software; you can redistribute it and/or modify

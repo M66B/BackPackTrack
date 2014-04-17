@@ -1,7 +1,7 @@
 package biz.bokhorst;
 
 /*
- Copyright 2011, 2012 Marcel Bokhorst
+ Copyright 2011-2014 Marcel Bokhorst
  All Rights Reserved
 
  This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date; //import java.util.Locale;
+import java.util.Locale;
 
 //import me.guillaumin.android.osmtracker.db.DataHelper;
 import android.database.Cursor;
@@ -38,7 +39,7 @@ public class GPXFileWriter {
 			+ " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
 			+ " xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\">";
 	private static final SimpleDateFormat POINT_DATE_FORMATTER = new SimpleDateFormat(
-			"yyyy-MM-dd'T'HH:mm:ss'Z'");
+			"yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
 
 	// Main logic
 	public static void writeGpxFile(String trackName, Cursor cTrackPoints,
