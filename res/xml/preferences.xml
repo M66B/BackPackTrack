@@ -47,9 +47,9 @@
             android:title="Activity recognition" />
 
         <EditTextPreference
-            android:defaultValue="15"
+            android:defaultValue="30"
             android:key="ActivityRecognitionInterval"
-            android:summary="Activity recognition every xxx minutes"
+            android:summary="Activity recognition every xxx seconds"
             android:title="Activity recognition interval" />
         <EditTextPreference
             android:defaultValue="30"

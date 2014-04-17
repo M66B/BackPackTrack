@@ -79,13 +79,14 @@ public class BPTService extends IntentService implements LocationListener,
 	private AlarmManager alarmManager = null;
 	private PendingIntent pendingAlarmIntent = null;
 	private BPTAlarmReceiver alarmReceiver = null;
-	private ActivityRecognitionClient mActivityRecognitionClient;
+	private ActivityRecognitionClient activityRecognitionClient;
+	private PendingIntent activityCallbackIntent;
 
 	// State
 	private boolean bound = false;
 	private boolean hasWakeLock = false;
 	private boolean waypoint = false;
-	private boolean should = false;
+	private boolean should = true;
 	private boolean locating = false;
 	private boolean locationwait = false;
 	private Location bestLocation = null;
@@ -116,14 +117,14 @@ public class BPTService extends IntentService implements LocationListener,
 					.getMostProbableActivity();
 			int confidence = mostProbableActivity.getConfidence();
 			int activityType = mostProbableActivity.getType();
+			should = (activityType != DetectedActivity.STILL);
 			String activityName = getNameFromType(activityType);
 			sendActivity(activityName, confidence);
-		}
+		} else
+			sendActivity(intent.getAction(), -1);
 	}
 
 	private String getNameFromType(int activityType) {
-		should = (activityType != DetectedActivity.STILL);
-
 		switch (activityType) {
 		case DetectedActivity.IN_VEHICLE:
 			return getString(R.string.in_vehicle);
@@ -208,9 +209,11 @@ public class BPTService extends IntentService implements LocationListener,
 		context.registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
 
 		sendActivity("Connecting", -1);
-		mActivityRecognitionClient = new ActivityRecognitionClient(this, this,
+		activityCallbackIntent = PendingIntent.getService(this, 0, new Intent(
+				this, BPTService.class), PendingIntent.FLAG_UPDATE_CURRENT);
+		activityRecognitionClient = new ActivityRecognitionClient(this, this,
 				this);
-		mActivityRecognitionClient.connect();
+		activityRecognitionClient.connect();
 
 		bound = true;
 		return serverMessenger.getBinder();
@@ -242,9 +245,13 @@ public class BPTService extends IntentService implements LocationListener,
 			databaseHelper = null;
 			locationManager = null;
 
-			if (mActivityRecognitionClient.isConnected()) {
+			if (activityRecognitionClient.isConnected()) {
 				sendActivity(getString(R.string.disconnecting), -1);
-				mActivityRecognitionClient.disconnect();
+				activityRecognitionClient
+						.removeActivityUpdates(activityCallbackIntent);
+				activityRecognitionClient.disconnect();
+				activityRecognitionClient = null;
+				activityCallbackIntent = null;
 			}
 
 			bound = false;
@@ -264,18 +271,15 @@ public class BPTService extends IntentService implements LocationListener,
 
 		long interval = Integer.parseInt(preferences.getString(
 				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL,
-				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT)) * 60L * 1000L;
-		Intent intent = new Intent(this, BPTService.class);
-		PendingIntent callbackIntent = PendingIntent.getService(this, 0,
-				intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		mActivityRecognitionClient.requestActivityUpdates(interval,
-				callbackIntent);
+				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT)) * 1000L;
+		activityRecognitionClient.requestActivityUpdates(interval,
+				activityCallbackIntent);
 	}
 
 	@Override
 	public void onDisconnected() {
 		sendActivity(getString(R.string.disconnected), -1);
-		mActivityRecognitionClient = null;
+		activityRecognitionClient = null;
 	}
 
 	// Helper start location
