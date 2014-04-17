@@ -22,6 +22,8 @@ public interface IXMLRPCSerializer {
 	String TYPE_BASE64 = "base64";
 	String TYPE_ARRAY = "array";
 	String TYPE_STRUCT = "struct";
+	// This added by mattias.ellback as part of issue #19
+	String TYPE_NULL = "nil";
 	
 	String DATETIME_FORMAT = "yyyyMMdd'T'HH:mm:ss";
 

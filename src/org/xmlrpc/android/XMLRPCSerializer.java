@@ -25,6 +25,10 @@ class XMLRPCSerializer implements IXMLRPCSerializer {
 
 	@SuppressWarnings("unchecked")
 	public void serialize(XmlSerializer serializer, Object object) throws IOException {
+		// This code supplied by mattias.ellback as part of issue #19
+		if (object == null){
+		     serializer.startTag(null, TYPE_NULL).endTag(null, TYPE_NULL);
+		} else
 		// check for scalar types:
 		if (object instanceof Integer || object instanceof Short || object instanceof Byte) {
 			serializer.startTag(null, TYPE_I4).text(object.toString()).endTag(null, TYPE_I4);
@@ -118,10 +122,18 @@ class XMLRPCSerializer implements IXMLRPCSerializer {
 				// empty <value></value>, return empty string
 				return "";
 			}
+
+			
 		} catch (XmlPullParserException e) {
 			hasType = false;
 		}
 		if (hasType) {
+			// This code submitted by mattias.ellback in issue #19
+			if (typeNodeName.equals(TYPE_NULL)){
+				parser.nextTag();
+				obj = null;
+			}
+			else
 			if (typeNodeName.equals(TYPE_INT) || typeNodeName.equals(TYPE_I4)) {
 				String value = parser.nextText();
 				obj = Integer.parseInt(value);

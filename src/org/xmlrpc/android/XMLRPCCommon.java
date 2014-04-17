@@ -26,9 +26,8 @@ class XMLRPCCommon {
 		iXMLRPCSerializer = serializer;
 	}
 			
-	protected void serializeParams(Object[] params) throws IllegalArgumentException, IllegalStateException, IOException {
-		if (params != null && params.length != 0)
-		{
+	protected void serializeParams(Object... params) throws IllegalArgumentException, IllegalStateException, IOException {
+		if (params != null && params.length != 0) {
 			// set method params
 			serializer.startTag(null, Tag.PARAMS);
 			for (int i=0; i<params.length; i++) {
