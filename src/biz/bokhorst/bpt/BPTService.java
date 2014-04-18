@@ -210,10 +210,14 @@ public class BPTService extends IntentService implements LocationListener,
 		alarmReceiver = new BPTAlarmReceiver();
 		context.registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
 
-		sendActivity("Connecting", -1);
-		activityRecognitionClient = new ActivityRecognitionClient(this, this,
-				this);
-		activityRecognitionClient.connect();
+		if (activityRecognitionClient == null) {
+			sendActivity("Connecting", -1);
+			activityRecognitionClient = new ActivityRecognitionClient(this,
+					this, this);
+			activityRecognitionClient.connect();
+		} else if (!activityRecognitionClient.isConnected()
+				&& !activityRecognitionClient.isConnecting())
+			activityRecognitionClient.connect();
 
 		bound = true;
 		return serverMessenger.getBinder();
@@ -245,18 +249,6 @@ public class BPTService extends IntentService implements LocationListener,
 			databaseHelper = null;
 			locationManager = null;
 
-			if (activityCallbackIntent != null) {
-				activityRecognitionClient
-						.removeActivityUpdates(activityCallbackIntent);
-				activityCallbackIntent = null;
-			}
-
-			if (activityRecognitionClient.isConnected()) {
-				activityRecognitionClient.disconnect();
-				activityRecognitionClient = null;
-				sendActivity(getString(R.string.disconnected), -1);
-			}
-
 			bound = false;
 		}
 
@@ -271,6 +263,7 @@ public class BPTService extends IntentService implements LocationListener,
 
 	@Override
 	public void onConnected(Bundle arg0) {
+		should = true;
 		sendActivity(getString(R.string.connected), -1);
 
 		long interval = Integer.parseInt(preferences.getString(
