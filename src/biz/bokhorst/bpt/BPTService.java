@@ -81,8 +81,6 @@ public class BPTService extends IntentService implements LocationListener,
 	private AlarmManager alarmManager = null;
 	private PendingIntent pendingAlarmIntent = null;
 	private BPTAlarmReceiver alarmReceiver = null;
-	private ActivityRecognitionClient activityRecognitionClient = null;
-	private PendingIntent activityCallbackIntent = null;
 
 	// State
 	private boolean bound = false;
@@ -95,6 +93,8 @@ public class BPTService extends IntentService implements LocationListener,
 	private Date nextTrackTime;
 
 	private static Location lastLocation = null;
+	private static ActivityRecognitionClient activityRecognitionClient = null;
+	private static PendingIntent activityCallbackIntent = null;
 
 	public class BPTAlarmReceiver extends BroadcastReceiver {
 		@Override
@@ -213,13 +213,12 @@ public class BPTService extends IntentService implements LocationListener,
 		context.registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
 
 		if (activityRecognitionClient == null) {
-			sendActivity("Connecting", -1, new Date().getTime());
+			sendActivity(getString(R.string.connecting), -1,
+					new Date().getTime());
 			activityRecognitionClient = new ActivityRecognitionClient(this,
 					this, this);
 			activityRecognitionClient.connect();
-		} else if (!activityRecognitionClient.isConnected()
-				&& !activityRecognitionClient.isConnecting())
-			activityRecognitionClient.connect();
+		}
 
 		bound = true;
 		return serverMessenger.getBinder();
@@ -280,13 +279,19 @@ public class BPTService extends IntentService implements LocationListener,
 	@Override
 	public void onDisconnected() {
 		should = true;
-		activityCallbackIntent = null;
-		activityRecognitionClient = null;
 		sendActivity(getString(R.string.disconnected), -1, new Date().getTime());
 	}
 
 	// Helper start location
 	protected void startLocating() {
+		if (activityRecognitionClient != null
+				&& !activityRecognitionClient.isConnected()
+				&& !activityRecognitionClient.isConnecting()) {
+			sendActivity(getString(R.string.connecting), -1,
+					new Date().getTime());
+			activityRecognitionClient.connect();
+		}
+
 		boolean use = preferences.getBoolean(
 				Preferences.PREF_ACTIVITYRECOGNITION,
 				Preferences.PREF_ACTIVITYRECOGNITION_DEFAULT);
