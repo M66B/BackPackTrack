@@ -72,6 +72,11 @@
             android:summary="Wait for best location until xxx meters accuracy"
             android:title="Min. accuracy" />
         <EditTextPreference
+            android:defaultValue="50"
+            android:key="MinDistance"
+            android:summary="Minimum distance from previous location in meters"
+            android:title="Min. distance" />
+        <EditTextPreference
             android:defaultValue="5"
             android:key="GeocodeCount"
             android:summary="Number of names to display when geocoding"

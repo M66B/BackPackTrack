@@ -54,6 +54,7 @@ public class Preferences extends PreferenceActivity {
 	public static final String PREF_FIXTIMEOUT = "FixTimeout";
 	public static final String PREF_MAXWAIT = "MaxWait";
 	public static final String PREF_MINACCURACY = "MinAccuracy";
+	public static final String PREF_MINDISTANCE = "MinDistance";
 	public static final String PREF_GEOCODECOUNT = "GeocodeCount";
 	public static final String PREF_IMPERIAL = "Imperial";
 
@@ -65,6 +66,7 @@ public class Preferences extends PreferenceActivity {
 	public static final String PREF_FIXTIMEOUT_DEFAULT = "120";
 	public static final String PREF_MAXWAIT_DEFAULT = "30";
 	public static final String PREF_MINACCURACY_DEFAULT = "20";
+	public static final String PREF_MINDISTANCE_DEFAULT = "50";
 	public static final String PREF_GEOCODECOUNT_DEFAULT = "5";
 	public static final boolean PREF_IMPERIAL_DEFAULT = false;
 

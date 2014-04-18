@@ -94,6 +94,8 @@ public class BPTService extends IntentService implements LocationListener,
 	private Location bestLocation = null;
 	private Date nextTrackTime;
 
+	private static Location lastLocation = null;
+
 	public class BPTAlarmReceiver extends BroadcastReceiver {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -471,14 +473,22 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// Helper method create track point
 	protected void makeTrackpoint(Location location) {
-		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
-				Preferences.PREF_TRACKNAME_DEFAULT);
-		databaseHelper.insertPoint(trackName, null, location, null, false);
+		long minDX = Integer.parseInt(preferences.getString(
+				Preferences.PREF_MINDISTANCE,
+				Preferences.PREF_MINDISTANCE_DEFAULT));
+		if (lastLocation == null || distanceM(lastLocation, location) >= minDX) {
+			lastLocation = location;
 
-		// User feedback
-		sendMessage(BackPackTrack.MSG_UPDATETRACK, null);
-		Toast.makeText(this, getString(R.string.TrackpointAdded),
-				Toast.LENGTH_LONG).show();
+			String trackName = preferences.getString(
+					Preferences.PREF_TRACKNAME,
+					Preferences.PREF_TRACKNAME_DEFAULT);
+			databaseHelper.insertPoint(trackName, null, location, null, false);
+
+			// User feedback
+			sendMessage(BackPackTrack.MSG_UPDATETRACK, null);
+			Toast.makeText(this, getString(R.string.TrackpointAdded),
+					Toast.LENGTH_LONG).show();
+		}
 	}
 
 	// Helper create way point
@@ -494,6 +504,23 @@ public class BPTService extends IntentService implements LocationListener,
 		String msg = String.format(getString(R.string.WaypointAdded), name);
 		Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
 		vibrator.vibrate(500);
+	}
+
+	public double distanceM(double userLat, double userLng, double venueLat,
+			double venueLng) {
+		double latDistance = Math.toRadians(userLat - venueLat);
+		double lngDistance = Math.toRadians(userLng - venueLng);
+		double a = (Math.sin(latDistance / 2) * Math.sin(latDistance / 2))
+				+ (Math.cos(Math.toRadians(userLat)))
+				* (Math.cos(Math.toRadians(venueLat)))
+				* (Math.sin(lngDistance / 2)) * (Math.sin(lngDistance / 2));
+		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		return 6371 * 1000 * c;
+	}
+
+	public double distanceM(Location a, Location b) {
+		return distanceM(a.getLatitude(), a.getLongitude(), b.getLatitude(),
+				b.getLongitude());
 	}
 
 	// GPS disabled
