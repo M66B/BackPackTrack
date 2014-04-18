@@ -121,9 +121,9 @@ public class BPTService extends IntentService implements LocationListener,
 			int activityType = mostProbableActivity.getType();
 			should = (activityType != DetectedActivity.STILL);
 			String activityName = getNameFromType(activityType);
-			sendActivity(activityName, confidence);
+			sendActivity(activityName, confidence, result.getTime());
 		} else
-			sendActivity(intent.getAction(), -1);
+			sendActivity(intent.getAction(), -1, new Date().getTime());
 	}
 
 	private String getNameFromType(int activityType) {
@@ -211,7 +211,7 @@ public class BPTService extends IntentService implements LocationListener,
 		context.registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
 
 		if (activityRecognitionClient == null) {
-			sendActivity("Connecting", -1);
+			sendActivity("Connecting", -1, new Date().getTime());
 			activityRecognitionClient = new ActivityRecognitionClient(this,
 					this, this);
 			activityRecognitionClient.connect();
@@ -258,13 +258,13 @@ public class BPTService extends IntentService implements LocationListener,
 	@Override
 	public void onConnectionFailed(ConnectionResult arg0) {
 		should = true;
-		sendActivity(getString(R.string.failed), -1);
+		sendActivity(getString(R.string.failed), -1, new Date().getTime());
 	}
 
 	@Override
 	public void onConnected(Bundle arg0) {
 		should = true;
-		sendActivity(getString(R.string.connected), -1);
+		sendActivity(getString(R.string.connected), -1, new Date().getTime());
 
 		long interval = Integer.parseInt(preferences.getString(
 				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL,
@@ -280,7 +280,7 @@ public class BPTService extends IntentService implements LocationListener,
 		should = true;
 		activityCallbackIntent = null;
 		activityRecognitionClient = null;
-		sendActivity(getString(R.string.disconnected), -1);
+		sendActivity(getString(R.string.disconnected), -1, new Date().getTime());
 	}
 
 	// Helper start location
@@ -585,10 +585,11 @@ public class BPTService extends IntentService implements LocationListener,
 		sendMessage(BackPackTrack.MSG_LOCATION, b);
 	}
 
-	private void sendActivity(String name, int confidence) {
+	private void sendActivity(String name, int confidence, long time) {
 		Bundle b = new Bundle();
 		b.putString("Name", name);
 		b.putInt("Confidence", confidence);
+		b.putLong("Time", time);
 		sendMessage(BackPackTrack.MSG_ACTIVITY, b);
 	}
 

@@ -86,7 +86,7 @@ public class BackPackTrack extends Activity implements
 	private SharedPreferences preferences = null;
 	private Handler handler = null;
 	private static final SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat(
-			"yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+			"dd/MM HH:mm:ss", Locale.getDefault());
 
 	// Incoming messages handler
 	@SuppressLint("HandlerLeak")
@@ -119,7 +119,8 @@ public class BackPackTrack extends Activity implements
 			else if (msg.what == MSG_AUTOUPDATE)
 				AutoUpdate();
 			else if (msg.what == MSG_ACTIVITY)
-				showActivity(b.getString("Name"), b.getInt("Confidence"));
+				showActivity(b.getString("Name"), b.getInt("Confidence"),
+						b.getLong("Time"));
 		}
 	}
 
@@ -418,11 +419,13 @@ public class BackPackTrack extends Activity implements
 		}
 	}
 
-	private void showActivity(String name, int confidence) {
+	private void showActivity(String name, int confidence, long time) {
 		if (confidence >= 0)
-			txtActivity.setText(String.format("%s %d %%", name, confidence));
+			txtActivity.setText(String.format("%s %d %% %s", name, confidence,
+					DATETIME_FORMATTER.format(new Date(time))));
 		else
-			txtActivity.setText(name);
+			txtActivity.setText(String.format("%s %s", name,
+					DATETIME_FORMATTER.format(new Date(time))));
 	}
 
 	// Helper make waypoint
