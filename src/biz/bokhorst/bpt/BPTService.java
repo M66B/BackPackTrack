@@ -333,6 +333,7 @@ public class BPTService extends IntentService implements LocationListener,
 			sendStage(getString(R.string.na));
 			sendStatus(getString(R.string.na));
 			sendSatellites(-1, -1);
+			sendActivity(getString(R.string.na), -1, new Date().getTime());
 		}
 	}
 
