@@ -141,6 +141,7 @@ public class BackPackTrack extends Activity implements
 	private TextView txtTime;
 	private TextView txtActivity;
 	private TextView txtTrackName;
+	private TextView txtLastUpload;
 	private TextView txtVersion;
 	private Button btnStart;
 	private Button btnStop;
@@ -193,6 +194,7 @@ public class BackPackTrack extends Activity implements
 		txtTime = (TextView) findViewById(R.id.txtTime);
 		txtActivity = (TextView) findViewById(R.id.txtActivity);
 		txtTrackName = (TextView) findViewById(R.id.txtTrackName);
+		txtLastUpload = (TextView) findViewById(R.id.txtLastUpload);
 		txtVersion = (TextView) findViewById(R.id.txtVersion);
 		btnStart = (Button) findViewById(R.id.btnStart);
 		btnStop = (Button) findViewById(R.id.btnStop);
@@ -786,6 +788,8 @@ public class BackPackTrack extends Activity implements
 			Toast.makeText(BackPackTrack.this,
 					String.format(getString(R.string.Uploaded), resultURL),
 					Toast.LENGTH_LONG).show();
+			txtLastUpload.setText(DATETIME_FORMATTER.format(new Date()
+					.getTime()));
 		} catch (Exception ex) {
 			Toast.makeText(BackPackTrack.this, ex.toString(), Toast.LENGTH_LONG)
 					.show();
