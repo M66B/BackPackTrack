@@ -58,6 +58,7 @@ import android.os.SystemClock;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.widget.Toast;
 import android.os.PowerManager;
 
@@ -124,6 +125,15 @@ public class BPTService extends IntentService implements LocationListener,
 			should = (activityType != DetectedActivity.STILL);
 			String activityName = getNameFromType(activityType);
 			sendActivity(activityName, confidence, result.getTime());
+
+			SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat(
+					"dd/MM HH:mm:ss", Locale.getDefault());
+			for (DetectedActivity activity : result.getProbableActivities())
+				Log.w("BPT",
+						DATETIME_FORMATTER.format(new Date(result.getTime()))
+								+ " Activity "
+								+ getNameFromType(activity.getType()) + " "
+								+ activity.getConfidence() + " %");
 		} else
 			sendActivity(intent.getAction(), -1, new Date().getTime());
 	}
@@ -623,6 +633,7 @@ public class BPTService extends IntentService implements LocationListener,
 		b.putString("Name", name);
 		b.putInt("Confidence", confidence);
 		b.putLong("Time", time);
+		b.putBoolean("Should", should);
 		sendMessage(BackPackTrack.MSG_ACTIVITY, b);
 	}
 
