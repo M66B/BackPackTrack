@@ -94,7 +94,6 @@ public class BPTService extends IntentService implements LocationListener,
 	private Date nextTrackTime;
 
 	private static boolean should = false;
-	private static Location lastLocation = null;
 	private static ActivityRecognitionClient activityRecognitionClient = null;
 
 	public BPTService() {
@@ -253,6 +252,7 @@ public class BPTService extends IntentService implements LocationListener,
 				Preferences.PREF_TRACKINTERVAL,
 				Preferences.PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
 		long alarmTime = SystemClock.elapsedRealtime() + interval;
+		alarmManager.cancel(pendingAlarmIntent);
 		alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, alarmTime,
 				pendingAlarmIntent);
 
@@ -298,9 +298,6 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// Helper stop locating
 	protected synchronized void stopLocating() {
-		// Disable alarm
-		alarmManager.cancel(pendingAlarmIntent);
-
 		if (locating) {
 			locating = false;
 			waypoint = false;
@@ -425,16 +422,16 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// Helper method create track point
 	protected void makeTrackpoint(Location location) {
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
+				Preferences.PREF_TRACKNAME_DEFAULT);
+
 		long minDX = Integer.parseInt(preferences.getString(
 				Preferences.PREF_MINDISTANCE,
 				Preferences.PREF_MINDISTANCE_DEFAULT));
 
+		Location lastLocation = databaseHelper.getYoungest(trackName, false);
 		if (lastLocation == null || distanceM(lastLocation, location) >= minDX) {
-			lastLocation = location;
-
-			String trackName = preferences.getString(
-					Preferences.PREF_TRACKNAME,
-					Preferences.PREF_TRACKNAME_DEFAULT);
+			// Register track point
 			databaseHelper.insertPoint(trackName, null, location, null, false);
 
 			// User feedback

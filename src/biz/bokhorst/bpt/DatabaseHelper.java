@@ -113,14 +113,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	// Get youngest point
-	public long getYoungest(String trackName, boolean wpt) {
+	public Location getYoungest(String trackName, boolean wpt) {
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.rawQuery("SELECT MAX(TIME) FROM LOCATION"
+		Cursor cursor = db.rawQuery("SELECT ID FROM LOCATION"
 				+ " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0"),
 				new String[] { trackName });
 		if (cursor.moveToFirst())
-			return cursor.getLong(0);
-		return cursor.getLong(0);
+			return getLocation(cursor.getLong(0));
+		return null;
 	}
 
 	// Get list of tracks
