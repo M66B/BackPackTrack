@@ -3,7 +3,7 @@
 Plugin Name: BackPackTrack
 Plugin URI: https://github.com/M66B/BackPackTrack
 Description: BackPackTrack XML-RPC methods
-Version: 0.7
+Version: 0.8
 Author: Marcel Bokhorst
 Author URI: http://blog.bokhorst.biz/about/
 */

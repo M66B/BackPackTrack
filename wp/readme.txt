@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AJSBB
 Tags: android, gpx, post, posts, maps, google, google maps, routes, tracks, geocode, geotag
 Requires at least: 3.1
 Tested up to: 3.9
-Stable tag: 0.7
+Stable tag: 0.8
 
 WordPress plugin and open source Android application to track and display your journeys
 
