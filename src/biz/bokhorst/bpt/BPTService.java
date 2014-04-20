@@ -475,60 +475,64 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// GPS disabled
 	@Override
-	public void onProviderDisabled(String arg0) {
-		sendStatus(getString(R.string.Off));
+	public synchronized void onProviderDisabled(String arg0) {
+		if (locating)
+			sendStatus(getString(R.string.Off));
 	}
 
 	// GPS enabled
 	@Override
-	public void onProviderEnabled(String s) {
-		sendStatus(getString(R.string.On));
+	public synchronized void onProviderEnabled(String s) {
+		if (locating)
+			sendStatus(getString(R.string.On));
 	}
 
 	// GPS status changed
 	@Override
-	public void onStatusChanged(String s, int i, Bundle b) {
-		if (i == LocationProvider.OUT_OF_SERVICE)
-			sendStatus(getString(R.string.StatusNoService));
-		else if (i == LocationProvider.TEMPORARILY_UNAVAILABLE)
-			sendStatus(getString(R.string.StatusUnavailable));
-		else if (i == LocationProvider.AVAILABLE)
-			sendStatus(getString(R.string.StatusAvailable));
-		else
-			sendStatus(String.format("Status %d", i));
-	}
-
-	// GPS status changed
-	@Override
-	public void onGpsStatusChanged(int event) {
-		if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
-			if (locationManager != null) {
-				GpsStatus status = locationManager.getGpsStatus(null);
-				if (status != null) {
-					int fix = 0;
-					int count = 0;
-					Iterable<GpsSatellite> sats = status.getSatellites();
-					Iterator<GpsSatellite> satI = sats.iterator();
-					while (satI.hasNext()) {
-						GpsSatellite gpssatellite = satI.next();
-						count++;
-						if (gpssatellite.usedInFix())
-							fix++;
-					}
-					sendSatellites(fix, count);
-				}
-			}
-
-		} else {
-			if (event == GpsStatus.GPS_EVENT_FIRST_FIX)
-				sendStatus(getString(R.string.GpsFix));
-			else if (event == GpsStatus.GPS_EVENT_STARTED)
-				sendStatus(getString(R.string.GpsStarted));
-			else if (event == GpsStatus.GPS_EVENT_STOPPED)
-				sendStatus(getString(R.string.GpsStopped));
+	public synchronized void onStatusChanged(String s, int i, Bundle b) {
+		if (locating)
+			if (i == LocationProvider.OUT_OF_SERVICE)
+				sendStatus(getString(R.string.StatusNoService));
+			else if (i == LocationProvider.TEMPORARILY_UNAVAILABLE)
+				sendStatus(getString(R.string.StatusUnavailable));
+			else if (i == LocationProvider.AVAILABLE)
+				sendStatus(getString(R.string.StatusAvailable));
 			else
-				sendStatus(String.format("Event %d", event));
-		}
+				sendStatus(String.format("Status %d", i));
+	}
+
+	// GPS status changed
+	@Override
+	public synchronized void onGpsStatusChanged(int event) {
+		if (locating)
+			if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
+				if (locationManager != null) {
+					GpsStatus status = locationManager.getGpsStatus(null);
+					if (status != null) {
+						int fix = 0;
+						int count = 0;
+						Iterable<GpsSatellite> sats = status.getSatellites();
+						Iterator<GpsSatellite> satI = sats.iterator();
+						while (satI.hasNext()) {
+							GpsSatellite gpssatellite = satI.next();
+							count++;
+							if (gpssatellite.usedInFix())
+								fix++;
+						}
+						sendSatellites(fix, count);
+					}
+				}
+
+			} else {
+				if (event == GpsStatus.GPS_EVENT_FIRST_FIX)
+					sendStatus(getString(R.string.GpsFix));
+				else if (event == GpsStatus.GPS_EVENT_STARTED)
+					sendStatus(getString(R.string.GpsStarted));
+				else if (event == GpsStatus.GPS_EVENT_STOPPED)
+					sendStatus(getString(R.string.GpsStopped));
+				else
+					sendStatus(String.format("Event %d", event));
+			}
 	}
 
 	// And a few helpers to simplify the above logic ;-)
