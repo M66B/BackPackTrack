@@ -369,21 +369,23 @@ public class BPTService extends IntentService implements LocationListener,
 	// Fix wait done
 	private final Runnable LocationWaitTimeoutTask = new Runnable() {
 		public void run() {
-			if (locating) {
-				// Stop locating procedure
-				stopLocating();
+			synchronized (BPTService.this) {
+				if (locating) {
+					// Stop locating procedure
+					stopLocating();
 
-				// Always make track point
-				makeTrackpoint(bestLocation);
+					// Always make track point
+					makeTrackpoint(bestLocation);
 
-				// Make way point
-				if (waypoint)
-					makeWaypoint(bestLocation);
+					// Make way point
+					if (waypoint)
+						makeWaypoint(bestLocation);
 
-				// User feedback
-				sendStage(String.format(getString(R.string.StageTracked),
-						Math.round(bestLocation.getAccuracy()),
-						TIME_FORMATTER.format(nextTrackTime)));
+					// User feedback
+					sendStage(String.format(getString(R.string.StageTracked),
+							Math.round(bestLocation.getAccuracy()),
+							TIME_FORMATTER.format(nextTrackTime)));
+				}
 			}
 		}
 	};
@@ -391,13 +393,16 @@ public class BPTService extends IntentService implements LocationListener,
 	// Fix timeout
 	private final Runnable FixTimeoutTask = new Runnable() {
 		public void run() {
-			if (locating) {
-				// Stop locating procedure
-				stopLocating();
+			synchronized (BPTService.this) {
+				if (locating) {
+					// Stop locating procedure
+					stopLocating();
 
-				// User feedback
-				sendStage(String.format(getString(R.string.StageFixTimeout),
-						TIME_FORMATTER.format(nextTrackTime)));
+					// User feedback
+					sendStage(String.format(
+							getString(R.string.StageFixTimeout),
+							TIME_FORMATTER.format(nextTrackTime)));
+				}
 			}
 		}
 	};
