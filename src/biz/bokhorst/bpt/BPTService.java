@@ -82,6 +82,8 @@ public class BPTService extends IntentService implements LocationListener,
 	private AlarmManager alarmManager = null;
 	private BPTAlarmReceiver alarmReceiver = null;
 	private Messenger clientMessenger = null;
+	private final Messenger serverMessenger = new Messenger(
+			new IncomingHandler());
 
 	// State
 	private boolean bound = false;
@@ -99,14 +101,31 @@ public class BPTService extends IntentService implements LocationListener,
 		super("BPTService");
 	}
 
-	private final Messenger serverMessenger = new Messenger(
-			new IncomingHandler());
+	@Override
+	public void onConnectionFailed(ConnectionResult arg0) {
+		should = true;
+		sendActivity(getString(R.string.failed), -1, new Date().getTime());
+	}
 
-	public class BPTAlarmReceiver extends BroadcastReceiver {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			startLocating();
-		}
+	@Override
+	public void onConnected(Bundle arg0) {
+		should = true;
+		sendActivity(getString(R.string.connected), -1, new Date().getTime());
+
+		long interval = Integer.parseInt(preferences.getString(
+				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL,
+				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT)) * 60L * 1000L;
+		PendingIntent activityCallbackIntent = PendingIntent.getService(this,
+				0, new Intent(this, BPTService.class),
+				PendingIntent.FLAG_UPDATE_CURRENT);
+		activityRecognitionClient.requestActivityUpdates(interval,
+				activityCallbackIntent);
+	}
+
+	@Override
+	public void onDisconnected() {
+		should = true;
+		sendActivity(getString(R.string.disconnected), -1, new Date().getTime());
 	}
 
 	@Override
@@ -192,43 +211,26 @@ public class BPTService extends IntentService implements LocationListener,
 		return super.onUnbind(intent);
 	}
 
+	// Handle alarms
+	public class BPTAlarmReceiver extends BroadcastReceiver {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			startLocating();
+		}
+	}
+
 	// Handle incoming messages
 	@SuppressLint("HandlerLeak")
 	private class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
+			Log.w("BPT", "Message=" + msg.what);
 			if (msg.replyTo != null)
 				clientMessenger = msg.replyTo;
+			should = true;
 			waypoint = (msg.what == MSG_WAYPOINT);
 			startLocating();
 		}
-	}
-
-	@Override
-	public void onConnectionFailed(ConnectionResult arg0) {
-		should = true;
-		sendActivity(getString(R.string.failed), -1, new Date().getTime());
-	}
-
-	@Override
-	public void onConnected(Bundle arg0) {
-		should = true;
-		sendActivity(getString(R.string.connected), -1, new Date().getTime());
-
-		long interval = Integer.parseInt(preferences.getString(
-				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL,
-				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT)) * 60L * 1000L;
-		PendingIntent activityCallbackIntent = PendingIntent.getService(this,
-				0, new Intent(this, BPTService.class),
-				PendingIntent.FLAG_UPDATE_CURRENT);
-		activityRecognitionClient.requestActivityUpdates(interval,
-				activityCallbackIntent);
-	}
-
-	@Override
-	public void onDisconnected() {
-		should = true;
-		sendActivity(getString(R.string.disconnected), -1, new Date().getTime());
 	}
 
 	// Helper start location
@@ -569,16 +571,21 @@ public class BPTService extends IntentService implements LocationListener,
 	}
 
 	private void sendMessage(int type, Bundle data) {
-		if (clientMessenger != null) {
-			try {
-				Message msg = Message.obtain();
-				msg.what = type;
-				if (data != null)
-					msg.setData(data);
-				clientMessenger.send(msg);
-			} catch (Exception ex) {
-				Toast.makeText(this, ex.toString(), Toast.LENGTH_LONG).show();
+		try {
+			if (clientMessenger != null) {
+				try {
+					Message msg = Message.obtain();
+					msg.what = type;
+					if (data != null)
+						msg.setData(data);
+					clientMessenger.send(msg);
+				} catch (Exception ex) {
+					Toast.makeText(this, ex.toString(), Toast.LENGTH_LONG)
+							.show();
+				}
 			}
+		} catch (Throwable ex) {
+			Log.e("BPT", "sendMessage: " + ex);
 		}
 	}
 }
