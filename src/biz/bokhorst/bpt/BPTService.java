@@ -379,7 +379,7 @@ public class BPTService extends IntentService implements LocationListener,
 
 				// User feedback
 				sendStage(String.format(getString(R.string.StageTracked),
-						bestLocation.getAccuracy(),
+						Math.round(bestLocation.getAccuracy()),
 						TIME_FORMATTER.format(nextTrackTime)));
 			}
 		}

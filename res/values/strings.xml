@@ -53,9 +53,9 @@
     <string name="Settings">Settings</string>
     <string name="Nolocation">No location</string>
     <string name="StageFixWait">Fix wait until %s</string>
-    <string name="StageTrackWait" formatted="false">Tracking until %s %dm</string>
+    <string name="StageTrackWait" formatted="false">Tracking until %s or %d m</string>
     <string name="StageFixTimeout">Fix timeout, next %s</string>
-    <string name="StageTracked" formatted="false">Tracked %dm, next %s</string>
+    <string name="StageTracked" formatted="false">Tracked %d m, next %s</string>
     <string name="in_vehicle">In vehicle</string>
     <string name="on_bicycle">On bicycle</string>
     <string name="on_foot">On foot</string>
