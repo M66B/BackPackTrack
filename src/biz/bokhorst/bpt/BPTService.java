@@ -93,7 +93,7 @@ public class BPTService extends IntentService implements LocationListener,
 	private Location bestLocation = null;
 	private Date nextTrackTime;
 
-	private static boolean should = true;
+	private static boolean should = false;
 	private static Location lastLocation = null;
 	private static ActivityRecognitionClient activityRecognitionClient = null;
 
@@ -248,26 +248,30 @@ public class BPTService extends IntentService implements LocationListener,
 			activityRecognitionClient.connect();
 		}
 
+		// Schedule next alarm
+		long interval = Integer.parseInt(preferences.getString(
+				Preferences.PREF_TRACKINTERVAL,
+				Preferences.PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
+		long alarmTime = SystemClock.elapsedRealtime() + interval;
+		alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, alarmTime,
+				pendingAlarmIntent);
+
+		// Prepare user feedback
+		nextTrackTime = new Date(System.currentTimeMillis() + interval);
+
 		// Use activity recognition?
 		boolean recognition = preferences.getBoolean(
 				Preferences.PREF_ACTIVITYRECOGNITION,
 				Preferences.PREF_ACTIVITYRECOGNITION_DEFAULT);
 
+		if (recognition && !should)
+			sendStage(String.format(getString(R.string.StageStill),
+					TIME_FORMATTER.format(nextTrackTime)));
+
 		if (!locating && (recognition ? should : true)) {
 			locating = true;
 			locationwait = false;
 			wakeLock.acquire();
-
-			// Schedule next alarm
-			long interval = Integer.parseInt(preferences.getString(
-					Preferences.PREF_TRACKINTERVAL,
-					Preferences.PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
-			long alarmTime = SystemClock.elapsedRealtime() + interval;
-			alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, alarmTime,
-					pendingAlarmIntent);
-
-			// Prepare user feedback
-			nextTrackTime = new Date(System.currentTimeMillis() + interval);
 
 			// Start waiting for fix
 			long timeout = Integer.parseInt(preferences.getString(
@@ -294,6 +298,9 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// Helper stop locating
 	protected synchronized void stopLocating() {
+		// Disable alarm
+		alarmManager.cancel(pendingAlarmIntent);
+
 		if (locating) {
 			locating = false;
 			waypoint = false;
@@ -306,9 +313,6 @@ public class BPTService extends IntentService implements LocationListener,
 			// Cancel fix/location tasks
 			taskHandler.removeCallbacks(FixTimeoutTask);
 			taskHandler.removeCallbacks(LocationWaitTimeoutTask);
-
-			// Disable alarm
-			alarmManager.cancel(pendingAlarmIntent);
 		}
 
 		// User feedback
@@ -424,6 +428,7 @@ public class BPTService extends IntentService implements LocationListener,
 		long minDX = Integer.parseInt(preferences.getString(
 				Preferences.PREF_MINDISTANCE,
 				Preferences.PREF_MINDISTANCE_DEFAULT));
+
 		if (lastLocation == null || distanceM(lastLocation, location) >= minDX) {
 			lastLocation = location;
 
