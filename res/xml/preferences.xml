@@ -21,11 +21,6 @@
             android:password="true"
             android:summary="Weblog pass word"
             android:title="Password" />
-
-        <CheckBoxPreference
-            android:key="BlogAutoUpdate"
-            android:summary="Auto upload GPX file when network available"
-            android:title="Auto update" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Tracking" >
         <EditTextPreference
@@ -47,9 +42,9 @@
             android:title="Activity recognition" />
 
         <EditTextPreference
-            android:defaultValue="300"
+            android:defaultValue="5"
             android:key="ActivityRecognitionInterval"
-            android:summary="Activity recognition every xxx seconds"
+            android:summary="Activity recognition every xxx minutes"
             android:title="Activity recognition interval" />
         <EditTextPreference
             android:defaultValue="10"
@@ -81,11 +76,6 @@
             android:key="GeocodeCount"
             android:summary="Number of names to display when geocoding"
             android:title="Geocode count" />
-
-        <CheckBoxPreference
-            android:key="Imperial"
-            android:summary="Feet, miles"
-            android:title="Imperial units" />
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -38,13 +38,11 @@ public class Preferences extends PreferenceActivity {
 	public static final String PREF_BLOGID = "BlogID";
 	public static final String PREF_BLOGUSER = "BlogUser";
 	public static final String PREF_BLOGPWD = "BlogPwd";
-	public static final String PREF_BLOGAUTOUPDATE = "BlogAutoUpdate";
 
 	public static final String PREF_BLOGURL_DEFAULT = "";
 	public static final String PREF_BLOGID_DEFAULT = "1";
 	public static final String PREF_BLOGUSER_DEFAULT = "";
 	public static final String PREF_BLOGPWD_DEFAULT = "";
-	public static final boolean PREF_BLOGAUTOUPDATE_DEFAULT = false;
 
 	public static final String PREF_TRACKNAME = "TrackName";
 	public static final String PREF_AUTOSTART = "AutoStart";
@@ -56,19 +54,17 @@ public class Preferences extends PreferenceActivity {
 	public static final String PREF_MINACCURACY = "MinAccuracy";
 	public static final String PREF_MINDISTANCE = "MinDistance";
 	public static final String PREF_GEOCODECOUNT = "GeocodeCount";
-	public static final String PREF_IMPERIAL = "Imperial";
 
 	public static final String PREF_TRACKNAME_DEFAULT = "Journey";
 	public static final boolean PREF_AUTOSTART_DEFAULT = false;
-	public static final boolean PREF_ACTIVITYRECOGNITION_DEFAULT = false;
-	public static final String PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT = "300";
+	public static final boolean PREF_ACTIVITYRECOGNITION_DEFAULT = true;
+	public static final String PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT = "5";
 	public static final String PREF_TRACKINTERVAL_DEFAULT = "10";
 	public static final String PREF_FIXTIMEOUT_DEFAULT = "90";
 	public static final String PREF_MAXWAIT_DEFAULT = "30";
 	public static final String PREF_MINACCURACY_DEFAULT = "20";
 	public static final String PREF_MINDISTANCE_DEFAULT = "50";
 	public static final String PREF_GEOCODECOUNT_DEFAULT = "5";
-	public static final boolean PREF_IMPERIAL_DEFAULT = false;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

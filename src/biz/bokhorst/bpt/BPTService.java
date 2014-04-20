@@ -75,46 +75,43 @@ public class BPTService extends IntentService implements LocationListener,
 	private LocationManager locationManager = null;
 	private DatabaseHelper databaseHelper = null;
 	private SharedPreferences preferences = null;
-	private PowerManager.WakeLock wakeLock = null;
-	private Handler taskHandler = null;
-	private Messenger clientMessenger = null;
 	private Vibrator vibrator = null;
-	private AlarmManager alarmManager = null;
+	private Handler taskHandler = null;
+	private PowerManager.WakeLock wakeLock = null;
 	private PendingIntent pendingAlarmIntent = null;
+	private AlarmManager alarmManager = null;
 	private BPTAlarmReceiver alarmReceiver = null;
+	private Messenger clientMessenger = null;
 
 	// State
 	private boolean bound = false;
-	private boolean hasWakeLock = false;
 	private boolean waypoint = false;
-	private boolean should = true;
 	private boolean locating = false;
 	private boolean locationwait = false;
 	private Location bestLocation = null;
 	private Date nextTrackTime;
 
+	private static boolean should = true;
 	private static Location lastLocation = null;
 	private static ActivityRecognitionClient activityRecognitionClient = null;
-	private static PendingIntent activityCallbackIntent = null;
-
-	public class BPTAlarmReceiver extends BroadcastReceiver {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (!hasWakeLock) {
-				hasWakeLock = true;
-				wakeLock.acquire();
-			}
-			taskHandler.removeCallbacks(PeriodicTrackTask);
-			taskHandler.post(PeriodicTrackTask);
-		}
-	}
 
 	public BPTService() {
 		super("BPTService");
 	}
 
+	private final Messenger serverMessenger = new Messenger(
+			new IncomingHandler());
+
+	public class BPTAlarmReceiver extends BroadcastReceiver {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			startLocating();
+		}
+	}
+
 	@Override
 	protected void onHandleIntent(Intent intent) {
+		// Check for activity recognition
 		if (ActivityRecognitionResult.hasResult(intent)) {
 			ActivityRecognitionResult result = ActivityRecognitionResult
 					.extractResult(intent);
@@ -122,76 +119,31 @@ public class BPTService extends IntentService implements LocationListener,
 					.getMostProbableActivity();
 			int confidence = mostProbableActivity.getConfidence();
 			int activityType = mostProbableActivity.getType();
+
 			should = (activityType != DetectedActivity.STILL);
 			String activityName = getNameFromType(activityType);
 			sendActivity(activityName, confidence, result.getTime());
 
-			SimpleDateFormat DATETIME_FORMATTER = new SimpleDateFormat(
-					"dd/MM HH:mm:ss", Locale.getDefault());
 			for (DetectedActivity activity : result.getProbableActivities())
-				Log.w("BPT",
-						DATETIME_FORMATTER.format(new Date(result.getTime()))
-								+ " Activity "
-								+ getNameFromType(activity.getType()) + " "
-								+ activity.getConfidence() + " %");
+				Log.w("BPT", TIME_FORMATTER.format(new Date(result.getTime()))
+						+ " Activity " + getNameFromType(activity.getType())
+						+ " " + activity.getConfidence() + " %");
 		} else
 			sendActivity(intent.getAction(), -1, new Date().getTime());
 	}
 
-	private String getNameFromType(int activityType) {
-		switch (activityType) {
-		case DetectedActivity.IN_VEHICLE:
-			return getString(R.string.in_vehicle);
-		case DetectedActivity.ON_BICYCLE:
-			return getString(R.string.on_bicycle);
-		case DetectedActivity.ON_FOOT:
-			return getString(R.string.on_foot);
-		case DetectedActivity.STILL:
-			return getString(R.string.still);
-		case DetectedActivity.UNKNOWN:
-			return getString(R.string.unknown);
-		case DetectedActivity.TILTING:
-			return getString(R.string.tilting);
-		}
-		return getString(R.string.unknown);
-	}
-
-	// Handle incoming messages
-	@SuppressLint("HandlerLeak")
-	private class IncomingHandler extends Handler {
-		@Override
-		public void handleMessage(Message msg) {
-			if (msg.replyTo != null)
-				clientMessenger = msg.replyTo;
-			waypoint = (msg.what == MSG_WAYPOINT);
-
-			// Immediate start location
-			if (!hasWakeLock) {
-				hasWakeLock = true;
-				wakeLock.acquire();
-			}
-			taskHandler.removeCallbacks(PeriodicTrackTask);
-			taskHandler.post(PeriodicTrackTask);
-		}
-	}
-
-	private final Messenger serverMessenger = new Messenger(
-			new IncomingHandler());
-
 	@Override
 	public IBinder onBind(Intent intent) {
-		// Get context
-		Context context = getApplicationContext();
-
-		// Build notification
-		Intent toLaunch = new Intent(context, BackPackTrack.class);
+		// Build intent
+		Intent toLaunch = new Intent(this, BackPackTrack.class);
 		toLaunch.setAction("android.intent.action.MAIN");
 		toLaunch.addCategory("android.intent.category.LAUNCHER");
 		toLaunch.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
 				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-		PendingIntent intentBack = PendingIntent.getActivity(context, 0,
-				toLaunch, PendingIntent.FLAG_UPDATE_CURRENT);
+		// Build pending intent
+		PendingIntent intentBack = PendingIntent.getActivity(this, 0, toLaunch,
+				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		// Build notification
 		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(
@@ -205,30 +157,24 @@ public class BPTService extends IntentService implements LocationListener,
 		Notification notification = notificationBuilder.build();
 
 		// Start foreground service
-		// Requires API level 5 (Android 2.0)
 		startForeground(1, notification);
 
 		// Instantiate helpers
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		databaseHelper = new DatabaseHelper(context);
-		preferences = PreferenceManager.getDefaultSharedPreferences(context);
+		databaseHelper = new DatabaseHelper(this);
+		preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+		taskHandler = new Handler();
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
 				"BPT");
-		taskHandler = new Handler();
-		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
+		Intent alarmIntent = new Intent("BPT_ALARM");
+		pendingAlarmIntent = PendingIntent.getBroadcast(this, 0, alarmIntent,
+				PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 		alarmReceiver = new BPTAlarmReceiver();
-		context.registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
-
-		if (activityRecognitionClient == null) {
-			sendActivity(getString(R.string.connecting), -1,
-					new Date().getTime());
-			activityRecognitionClient = new ActivityRecognitionClient(this,
-					this, this);
-			activityRecognitionClient.connect();
-		}
+		registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
 
 		bound = true;
 		return serverMessenger.getBinder();
@@ -237,33 +183,25 @@ public class BPTService extends IntentService implements LocationListener,
 	@Override
 	public boolean onUnbind(Intent intent) {
 		if (bound) {
-			// Stop periodic track task (if any)
-			Context context = getApplicationContext();
-			context.unregisterReceiver(alarmReceiver);
-			alarmReceiver = null;
-			taskHandler.removeCallbacks(PeriodicTrackTask);
-
-			// Stop locating procedure (if any)
-			stopLocating(); // Removes other tasks
-
-			// Stop foreground service
-			stopForeground(true);
-
-			// Dispose helpers
-			taskHandler = null;
-			if (hasWakeLock) {
-				hasWakeLock = false;
-				wakeLock.release();
-			}
-			wakeLock = null;
-			preferences = null;
-			databaseHelper = null;
-			locationManager = null;
-
 			bound = false;
-		}
 
+			unregisterReceiver(alarmReceiver);
+			stopLocating();
+			stopForeground(true);
+		}
 		return super.onUnbind(intent);
+	}
+
+	// Handle incoming messages
+	@SuppressLint("HandlerLeak")
+	private class IncomingHandler extends Handler {
+		@Override
+		public void handleMessage(Message msg) {
+			if (msg.replyTo != null)
+				clientMessenger = msg.replyTo;
+			waypoint = (msg.what == MSG_WAYPOINT);
+			startLocating();
+		}
 	}
 
 	@Override
@@ -279,9 +217,10 @@ public class BPTService extends IntentService implements LocationListener,
 
 		long interval = Integer.parseInt(preferences.getString(
 				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL,
-				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT)) * 1000L;
-		activityCallbackIntent = PendingIntent.getService(this, 0, new Intent(
-				this, BPTService.class), PendingIntent.FLAG_UPDATE_CURRENT);
+				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT)) * 60L * 1000L;
+		PendingIntent activityCallbackIntent = PendingIntent.getService(this,
+				0, new Intent(this, BPTService.class),
+				PendingIntent.FLAG_UPDATE_CURRENT);
 		activityRecognitionClient.requestActivityUpdates(interval,
 				activityCallbackIntent);
 	}
@@ -293,21 +232,40 @@ public class BPTService extends IntentService implements LocationListener,
 	}
 
 	// Helper start location
-	protected void startLocating() {
-		if (activityRecognitionClient != null
-				&& !activityRecognitionClient.isConnected()
+	protected synchronized void startLocating() {
+		// Start activity recognition
+		if (activityRecognitionClient == null)
+			activityRecognitionClient = new ActivityRecognitionClient(this,
+					this, this);
+
+		// Connect activity recognition
+		if (!activityRecognitionClient.isConnected()
 				&& !activityRecognitionClient.isConnecting()) {
 			sendActivity(getString(R.string.connecting), -1,
 					new Date().getTime());
 			activityRecognitionClient.connect();
 		}
 
-		boolean use = preferences.getBoolean(
+		// Use activity recognition?
+		boolean recognition = preferences.getBoolean(
 				Preferences.PREF_ACTIVITYRECOGNITION,
 				Preferences.PREF_ACTIVITYRECOGNITION_DEFAULT);
 
-		if (!locating && (use ? should : true)) {
+		if (!locating && (recognition ? should : true)) {
 			locating = true;
+			locationwait = false;
+			wakeLock.acquire();
+
+			// Schedule next alarm
+			long interval = Integer.parseInt(preferences.getString(
+					Preferences.PREF_TRACKINTERVAL,
+					Preferences.PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
+			long alarmTime = SystemClock.elapsedRealtime() + interval;
+			alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, alarmTime,
+					pendingAlarmIntent);
+
+			// Prepare user feedback
+			nextTrackTime = new Date(System.currentTimeMillis() + interval);
 
 			// Start waiting for fix
 			long timeout = Integer.parseInt(preferences.getString(
@@ -316,7 +274,6 @@ public class BPTService extends IntentService implements LocationListener,
 			taskHandler.postDelayed(FixTimeoutTask, timeout);
 
 			// Request location updates
-			locationwait = false;
 			locationManager.requestLocationUpdates(
 					LocationManager.GPS_PROVIDER, 0, 0, this);
 			locationManager.addGpsStatusListener(this);
@@ -334,28 +291,32 @@ public class BPTService extends IntentService implements LocationListener,
 	}
 
 	// Helper stop locating
-	protected void stopLocating() {
+	protected synchronized void stopLocating() {
 		if (locating) {
 			locating = false;
-
-			// Cancel fix/location tasks
-			taskHandler.removeCallbacks(FixTimeoutTask);
-			taskHandler.removeCallbacks(LocationWaitTimeoutTask);
+			waypoint = false;
+			wakeLock.release();
 
 			// Disable location updates
 			locationManager.removeGpsStatusListener(this);
 			locationManager.removeUpdates(this);
 
-			// User feedback
-			sendStage(getString(R.string.na));
-			sendStatus(getString(R.string.na));
-			sendSatellites(-1, -1);
-			sendActivity(getString(R.string.na), -1, new Date().getTime());
+			// Cancel fix/location tasks
+			taskHandler.removeCallbacks(FixTimeoutTask);
+			taskHandler.removeCallbacks(LocationWaitTimeoutTask);
+
+			// Disable alarm
+			alarmManager.cancel(pendingAlarmIntent);
 		}
+
+		// User feedback
+		sendStage(getString(R.string.na));
+		sendStatus(getString(R.string.na));
+		sendSatellites(-1, -1);
 	}
 
 	@Override
-	public void onLocationChanged(Location location) {
+	public synchronized void onLocationChanged(Location location) {
 		if (locating) {
 			// Have location: stop fix timeout task
 			taskHandler.removeCallbacks(FixTimeoutTask);
@@ -377,16 +338,18 @@ public class BPTService extends IntentService implements LocationListener,
 					taskHandler.post(LocationWaitTimeoutTask);
 				}
 			} else {
-				// Start waiting for best location
-				locationwait = true;
-
 				// Current location is best location (for now)
 				bestLocation = location;
+
+				// Start waiting for better location
+				locationwait = true;
+
+				// Get maximum wait time
 				long wait = Integer.parseInt(preferences.getString(
 						Preferences.PREF_MAXWAIT,
 						Preferences.PREF_MAXWAIT_DEFAULT)) * 1000L;
 
-				// Wait for best location for some time
+				// Wait for better location for some time
 				taskHandler.postDelayed(LocationWaitTimeoutTask, wait);
 				Date waitTime = new Date(System.currentTimeMillis() + wait);
 
@@ -394,97 +357,65 @@ public class BPTService extends IntentService implements LocationListener,
 				sendStage(String.format(getString(R.string.StageTrackWait),
 						TIME_FORMATTER.format(waitTime), minAccuracy));
 			}
-		}
-
-		// User feedback
-		sendLocation(location);
-	}
-
-	// Periodic tracking
-	final Runnable PeriodicTrackTask = new Runnable() {
-		public void run() {
-			// Start locating procedure
-			startLocating();
-
-			// Reschedule
-			long interval = Integer.parseInt(preferences.getString(
-					Preferences.PREF_TRACKINTERVAL,
-					Preferences.PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
-			Intent alarmIntent = new Intent("BPT_ALARM");
-			Context context = getApplicationContext();
-			pendingAlarmIntent = PendingIntent.getBroadcast(context, 0,
-					alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-			long alarmTime = SystemClock.elapsedRealtime() + interval;
-			alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, alarmTime,
-					pendingAlarmIntent);
-
-			// Prepare user feedback
-			nextTrackTime = new Date(System.currentTimeMillis() + interval);
-		}
-	};
-
-	// Fix wait done
-	final Runnable LocationWaitTimeoutTask = new Runnable() {
-		public void run() {
-			// Stop locating procedure
-			stopLocating();
-
-			// Always make track point
-			makeTrackpoint(bestLocation);
-
-			// Make way point
-			if (waypoint) {
-				waypoint = false;
-				makeWaypoint(bestLocation);
-			}
 
 			// User feedback
-			sendLocation(bestLocation);
-			sendStage(String.format(getString(R.string.StageTracked),
-					TIME_FORMATTER.format(nextTrackTime)));
-			sendMessage(BackPackTrack.MSG_AUTOUPDATE, null);
+			sendLocation(location);
+		}
+	}
 
-			if (hasWakeLock) {
-				hasWakeLock = false;
-				wakeLock.release();
+	// Fix wait done
+	private final Runnable LocationWaitTimeoutTask = new Runnable() {
+		public void run() {
+			if (locating) {
+				// Stop locating procedure
+				stopLocating();
+
+				// Always make track point
+				makeTrackpoint(bestLocation);
+
+				// Make way point
+				if (waypoint)
+					makeWaypoint(bestLocation);
+
+				// User feedback
+				sendStage(String.format(getString(R.string.StageTracked),
+						bestLocation.getAccuracy(),
+						TIME_FORMATTER.format(nextTrackTime)));
 			}
 		}
 	};
 
 	// Fix timeout
-	final Runnable FixTimeoutTask = new Runnable() {
+	private final Runnable FixTimeoutTask = new Runnable() {
 		public void run() {
-			// Stop locating procedure
-			stopLocating();
+			if (locating) {
+				// Stop locating procedure
+				stopLocating();
 
-			// Prevent way point
-			waypoint = false;
-
-			// Get last know location
-			String trackName = preferences.getString(
-					Preferences.PREF_TRACKNAME,
-					Preferences.PREF_TRACKNAME_DEFAULT);
-			Location location = locationManager
-					.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-			// Use last known location if younger
-			if (location != null
-					&& location.getTime() > databaseHelper.getYoungest(
-							trackName, false))
-				makeTrackpoint(location);
-
-			// User feedback
-			sendStage(String.format(getString(R.string.StageFixTimeout),
-					TIME_FORMATTER.format(nextTrackTime)));
-			if (location != null)
-				sendLocation(location);
-
-			if (hasWakeLock) {
-				hasWakeLock = false;
-				wakeLock.release();
+				// User feedback
+				sendStage(String.format(getString(R.string.StageFixTimeout),
+						TIME_FORMATTER.format(nextTrackTime)));
 			}
 		}
 	};
+
+	private String getNameFromType(int activityType) {
+		switch (activityType) {
+		case DetectedActivity.IN_VEHICLE:
+			return getString(R.string.in_vehicle);
+		case DetectedActivity.ON_BICYCLE:
+			return getString(R.string.on_bicycle);
+		case DetectedActivity.ON_FOOT:
+			return getString(R.string.on_foot);
+		case DetectedActivity.STILL:
+			return getString(R.string.still);
+		case DetectedActivity.UNKNOWN:
+			return getString(R.string.unknown);
+		case DetectedActivity.TILTING:
+			return getString(R.string.tilting);
+		}
+		return getString(R.string.unknown);
+	}
 
 	// Helper method create track point
 	protected void makeTrackpoint(Location location) {

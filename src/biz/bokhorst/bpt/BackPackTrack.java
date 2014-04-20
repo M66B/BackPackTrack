@@ -77,8 +77,7 @@ public class BackPackTrack extends Activity implements
 	public static final int MSG_SATELLITES = 3;
 	public static final int MSG_LOCATION = 4;
 	public static final int MSG_UPDATETRACK = 5;
-	public static final int MSG_AUTOUPDATE = 6;
-	public static final int MSG_ACTIVITY = 7;
+	public static final int MSG_ACTIVITY = 6;
 
 	// Helpers
 	private ConnectivityManager connectivityManager = null;
@@ -116,8 +115,6 @@ public class BackPackTrack extends Activity implements
 				showLocation(location);
 			} else if (msg.what == MSG_UPDATETRACK)
 				updateTrack();
-			else if (msg.what == MSG_AUTOUPDATE)
-				AutoUpdate();
 			else if (msg.what == MSG_ACTIVITY)
 				showActivity(b.getString("Name"), b.getInt("Confidence"),
 						b.getLong("Time"), b.getBoolean("Should"));
@@ -374,16 +371,6 @@ public class BackPackTrack extends Activity implements
 		txtTrackName.setText(msg);
 	}
 
-	// Helper auto update
-	private void AutoUpdate() {
-		if (preferences.getBoolean(Preferences.PREF_BLOGAUTOUPDATE,
-				Preferences.PREF_BLOGAUTOUPDATE_DEFAULT)) {
-			NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
-			if (netInfo != null && netInfo.isConnected())
-				upload();
-		}
-	}
-
 	// Helper show location
 	private void showLocation(Location location) {
 		if (location == null) {
@@ -394,28 +381,16 @@ public class BackPackTrack extends Activity implements
 			txtAccuracy.setText(R.string.na);
 			txtTime.setText(R.string.na);
 		} else {
-			boolean imperial = preferences.getBoolean(
-					Preferences.PREF_IMPERIAL,
-					Preferences.PREF_IMPERIAL_DEFAULT);
 			txtLatitude.setText(String.format("%s", Location.convert(
 					location.getLatitude(), Location.FORMAT_SECONDS)));
 			txtLongitude.setText(String.format("%s", Location.convert(
 					location.getLongitude(), Location.FORMAT_SECONDS)));
-			if (imperial) {
-				txtAltitude.setText(String.format("%d ft",
-						Math.round(location.getAltitude() / 0.3048)));
-				txtSpeed.setText(String.format("%d ft/s",
-						Math.round(location.getSpeed() / 0.3048)));
-				txtAccuracy.setText(String.format("%d ft",
-						Math.round(location.getAccuracy() / 0.3048)));
-			} else {
-				txtAltitude.setText(String.format("%d m",
-						Math.round(location.getAltitude())));
-				txtSpeed.setText(String.format("%d m/s",
-						Math.round(location.getSpeed())));
-				txtAccuracy.setText(String.format("%d m",
-						Math.round(location.getAccuracy())));
-			}
+			txtAltitude.setText(String.format("%d m",
+					Math.round(location.getAltitude())));
+			txtSpeed.setText(String.format("%d m/s",
+					Math.round(location.getSpeed())));
+			txtAccuracy.setText(String.format("%d m",
+					Math.round(location.getAccuracy())));
 			txtTime.setText(String.format("%s",
 					DATETIME_FORMATTER.format(new Date(location.getTime()))));
 		}
