@@ -61,9 +61,9 @@ public class Preferences extends PreferenceActivity {
 	public static final String PREF_TRACKNAME_DEFAULT = "Journey";
 	public static final boolean PREF_AUTOSTART_DEFAULT = false;
 	public static final boolean PREF_ACTIVITYRECOGNITION_DEFAULT = false;
-	public static final String PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT = "30";
+	public static final String PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT = "300";
 	public static final String PREF_TRACKINTERVAL_DEFAULT = "10";
-	public static final String PREF_FIXTIMEOUT_DEFAULT = "120";
+	public static final String PREF_FIXTIMEOUT_DEFAULT = "90";
 	public static final String PREF_MAXWAIT_DEFAULT = "30";
 	public static final String PREF_MINACCURACY_DEFAULT = "20";
 	public static final String PREF_MINDISTANCE_DEFAULT = "50";

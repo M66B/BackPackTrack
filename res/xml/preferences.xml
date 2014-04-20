@@ -47,22 +47,22 @@
             android:title="Activity recognition" />
 
         <EditTextPreference
-            android:defaultValue="30"
+            android:defaultValue="300"
             android:key="ActivityRecognitionInterval"
             android:summary="Activity recognition every xxx seconds"
             android:title="Activity recognition interval" />
         <EditTextPreference
-            android:defaultValue="30"
+            android:defaultValue="10"
             android:key="TrackInterval"
             android:summary="Create track point every xxx minutes"
             android:title="Track interval" />
         <EditTextPreference
-            android:defaultValue="300"
+            android:defaultValue="90"
             android:key="FixTimeout"
             android:summary="Wait for GPS fix for xxx seconds"
             android:title="Fix timeout" />
         <EditTextPreference
-            android:defaultValue="60"
+            android:defaultValue="30"
             android:key="MaxWait"
             android:summary="Wait for best location for xxx seconds"
             android:title="Max. wait" />
