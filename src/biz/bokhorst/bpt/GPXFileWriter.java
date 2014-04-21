@@ -75,6 +75,9 @@ public class GPXFileWriter {
 							.getColumnIndex("TIME")))) + "</time>" + "\n");
 			out.append("\t\t\t\t" + "<cmt>speed="
 					+ c.getString(c.getColumnIndex("SPEED")) + "</cmt>" + "\n");
+			String activity = (c.getString(c.getColumnIndex("ACTIVITY")));
+			if (activity != null)
+				out.append("\t\t\t\t" + "<desc>" + activity + "</desc>" + "\n");
 			out.append("\t\t\t\t" + "<hdop>"
 					+ c.getString(c.getColumnIndex("ACCURACY")) + "</hdop>"
 					+ "\n");

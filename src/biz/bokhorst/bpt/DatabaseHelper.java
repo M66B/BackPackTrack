@@ -32,7 +32,7 @@ import android.widget.Toast;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private static final String DBNAME = "JOURNEY";
-	private static final int DBVERSION = 4;
+	private static final int DBVERSION = 5;
 	private Context _context;
 
 	private static final String DBCREATE = "CREATE TABLE LOCATION ("
@@ -41,7 +41,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ " LATITUDE REAL NOT NULL," + " LONGITUDE REAL NOT NULL,"
 			+ " ALTITUDE REAL NOT NULL," + " SPEED REAL NOT NULL,"
 			+ " ACCURACY REAL NOT NULL," + " TIME INTEGER NOT NULL,"
-			+ " NAME TEXT, " + " WPT NOT NULL" + ");";
+			+ " NAME TEXT, " + " WPT NOT NULL, " + " ACTIVITY TEXT" + ");";
 
 	public DatabaseHelper(Context context) {
 		super(context, DBNAME, null, DBVERSION);
@@ -55,7 +55,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		if (oldVersion == 3) {
+		if (oldVersion == 4) {
 			db.execSQL("DROP TABLE LOCATION");
 			db.execSQL(DBCREATE);
 			Toast.makeText(_context, "Database updated", Toast.LENGTH_LONG)
@@ -65,7 +65,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	// Insert new trackpoint or waypoint
 	public void insertPoint(String trackName, String segment,
-			Location location, String name, boolean wpt) {
+			Location location, String name, boolean wpt, String activity) {
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues cv = new ContentValues();
 		cv.put("TRACK", trackName);
@@ -78,6 +78,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		cv.put("TIME", location.getTime());
 		cv.put("NAME", name);
 		cv.put("WPT", wpt);
+		cv.put("ACTIVITY", activity);
 		db.insert("LOCATION", null, cv);
 	}
 
@@ -105,7 +106,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		SQLiteDatabase db = this.getReadableDatabase();
 		return db
 				.rawQuery(
-						"SELECT ID, TRACK, SEGMENT, LATITUDE, LONGITUDE, ALTITUDE, SPEED, ACCURACY, TIME, NAME FROM LOCATION"
+						"SELECT ID, TRACK, SEGMENT, LATITUDE, LONGITUDE, ALTITUDE, SPEED, ACCURACY, TIME, NAME, ACTIVITY FROM LOCATION"
 								+ " WHERE TRACK=? AND WPT="
 								+ (wpt ? "1" : "0")
 								+ " ORDER BY TIME" + (desc ? " DESC" : ""),

@@ -94,6 +94,7 @@ public class BPTService extends IntentService implements LocationListener,
 	private Date nextTrackTime;
 
 	private static boolean should = false;
+	private static String lastActivity = null;
 	private static ActivityRecognitionClient activityRecognitionClient = null;
 
 	public BPTService() {
@@ -140,6 +141,7 @@ public class BPTService extends IntentService implements LocationListener,
 
 			should = (activityType != DetectedActivity.STILL);
 			String activityName = getNameFromType(activityType);
+			lastActivity = activityName;
 			sendActivity(activityName, confidence, result.getTime());
 
 			for (DetectedActivity activity : result.getProbableActivities())
@@ -448,7 +450,8 @@ public class BPTService extends IntentService implements LocationListener,
 		Location lastLocation = databaseHelper.getYoungest(trackName, false);
 		if (lastLocation == null || distanceM(lastLocation, location) >= minDX) {
 			// Register track point
-			databaseHelper.insertPoint(trackName, null, location, null, false);
+			databaseHelper.insertPoint(trackName, null, location, null, false,
+					lastActivity);
 
 			// User feedback
 			sendMessage(BackPackTrack.MSG_UPDATETRACK, null);
@@ -463,7 +466,8 @@ public class BPTService extends IntentService implements LocationListener,
 				Preferences.PREF_TRACKNAME_DEFAULT);
 		int count = databaseHelper.countPoints(trackName, true);
 		String name = String.format(Locale.getDefault(), "%03d", count + 1);
-		databaseHelper.insertPoint(trackName, null, location, name, true);
+		databaseHelper.insertPoint(trackName, null, location, name, true,
+				lastActivity);
 
 		// User feedback
 		sendMessage(BackPackTrack.MSG_UPDATETRACK, null);

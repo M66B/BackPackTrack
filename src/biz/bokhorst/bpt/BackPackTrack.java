@@ -408,10 +408,11 @@ public class BackPackTrack extends Activity implements
 	}
 
 	// Helper make waypoint
-	private void makeWaypoint(Location location, String name) {
+	private void makeWaypoint(Location location, String name, String activity) {
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
 				Preferences.PREF_TRACKNAME_DEFAULT);
-		databaseHelper.insertPoint(trackName, null, location, name, true);
+		databaseHelper.insertPoint(trackName, null, location, name, true,
+				activity);
 		updateTrack();
 		String msg = String.format(getString(R.string.WaypointAdded), name);
 		Toast.makeText(BackPackTrack.this, msg, Toast.LENGTH_LONG).show();
@@ -472,7 +473,8 @@ public class BackPackTrack extends Activity implements
 													// Make way point
 													makeWaypoint(
 															location,
-															(String) address[item]);
+															(String) address[item],
+															null);
 												} else
 													Toast.makeText(
 															BackPackTrack.this,
