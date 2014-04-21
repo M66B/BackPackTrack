@@ -281,7 +281,8 @@ public class BPTService extends IntentService implements LocationListener,
 
 			// Request location updates
 			locationManager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, 0, 0, this);
+					LocationManager.GPS_PROVIDER, 0, 0, this,
+					taskHandler.getLooper());
 			locationManager.addGpsStatusListener(this);
 
 			// User feedback
@@ -319,7 +320,7 @@ public class BPTService extends IntentService implements LocationListener,
 	}
 
 	@Override
-	public synchronized void onLocationChanged(Location location) {
+	public void onLocationChanged(Location location) {
 		if (locating) {
 			// Have location: stop fix timeout task
 			taskHandler.removeCallbacks(FixTimeoutTask);
@@ -369,23 +370,21 @@ public class BPTService extends IntentService implements LocationListener,
 	// Fix wait done
 	private final Runnable LocationWaitTimeoutTask = new Runnable() {
 		public void run() {
-			synchronized (BPTService.this) {
-				if (locating) {
-					// Stop locating procedure
-					stopLocating();
+			if (locating) {
+				// Stop locating procedure
+				stopLocating();
 
-					// Always make track point
-					makeTrackpoint(bestLocation);
+				// Always make track point
+				makeTrackpoint(bestLocation);
 
-					// Make way point
-					if (waypoint)
-						makeWaypoint(bestLocation);
+				// Make way point
+				if (waypoint)
+					makeWaypoint(bestLocation);
 
-					// User feedback
-					sendStage(String.format(getString(R.string.StageTracked),
-							Math.round(bestLocation.getAccuracy()),
-							TIME_FORMATTER.format(nextTrackTime)));
-				}
+				// User feedback
+				sendStage(String.format(getString(R.string.StageTracked),
+						Math.round(bestLocation.getAccuracy()),
+						TIME_FORMATTER.format(nextTrackTime)));
 			}
 		}
 	};
@@ -393,16 +392,13 @@ public class BPTService extends IntentService implements LocationListener,
 	// Fix timeout
 	private final Runnable FixTimeoutTask = new Runnable() {
 		public void run() {
-			synchronized (BPTService.this) {
-				if (locating) {
-					// Stop locating procedure
-					stopLocating();
+			if (locating) {
+				// Stop locating procedure
+				stopLocating();
 
-					// User feedback
-					sendStage(String.format(
-							getString(R.string.StageFixTimeout),
-							TIME_FORMATTER.format(nextTrackTime)));
-				}
+				// User feedback
+				sendStage(String.format(getString(R.string.StageFixTimeout),
+						TIME_FORMATTER.format(nextTrackTime)));
 			}
 		}
 	};
@@ -480,21 +476,21 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// GPS disabled
 	@Override
-	public synchronized void onProviderDisabled(String arg0) {
+	public void onProviderDisabled(String arg0) {
 		if (locating)
 			sendStatus(getString(R.string.Off));
 	}
 
 	// GPS enabled
 	@Override
-	public synchronized void onProviderEnabled(String s) {
+	public void onProviderEnabled(String s) {
 		if (locating)
 			sendStatus(getString(R.string.On));
 	}
 
 	// GPS status changed
 	@Override
-	public synchronized void onStatusChanged(String s, int i, Bundle b) {
+	public void onStatusChanged(String s, int i, Bundle b) {
 		if (locating)
 			if (i == LocationProvider.OUT_OF_SERVICE)
 				sendStatus(getString(R.string.StatusNoService));
@@ -508,7 +504,7 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// GPS status changed
 	@Override
-	public synchronized void onGpsStatusChanged(int event) {
+	public void onGpsStatusChanged(int event) {
 		if (locating)
 			if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
 				if (locationManager != null) {
