@@ -116,8 +116,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public Location getYoungest(String trackName, boolean wpt) {
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor cursor = db.rawQuery("SELECT ID FROM LOCATION"
-				+ " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0"),
-				new String[] { trackName });
+				+ " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0")
+				+ " ORDER BY TIME DESC", new String[] { trackName });
 		if (cursor.moveToFirst())
 			return getLocation(cursor.getLong(0));
 		return null;

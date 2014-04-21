@@ -204,8 +204,8 @@ public class BPTService extends IntentService implements LocationListener,
 			bound = false;
 
 			unregisterReceiver(alarmReceiver);
-			stopLocating();
 			stopForeground(true);
+			taskHandler.post(StopTask);
 		}
 		return super.onUnbind(intent);
 	}
@@ -214,7 +214,7 @@ public class BPTService extends IntentService implements LocationListener,
 	public class BPTAlarmReceiver extends BroadcastReceiver {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			startLocating();
+			taskHandler.post(StartTask);
 		}
 	}
 
@@ -228,7 +228,7 @@ public class BPTService extends IntentService implements LocationListener,
 				clientMessenger = msg.replyTo;
 			should = true;
 			waypoint = (msg.what == MSG_WAYPOINT);
-			startLocating();
+			taskHandler.post(StartTask);
 		}
 	}
 
@@ -299,6 +299,9 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// Helper stop locating
 	protected synchronized void stopLocating() {
+		// Cancel alarm
+		alarmManager.cancel(pendingAlarmIntent);
+
 		if (locating) {
 			locating = false;
 			waypoint = false;
@@ -318,6 +321,18 @@ public class BPTService extends IntentService implements LocationListener,
 		sendStatus(getString(R.string.na));
 		sendSatellites(-1, -1);
 	}
+
+	private final Runnable StartTask = new Runnable() {
+		public void run() {
+			startLocating();
+		}
+	};
+
+	private final Runnable StopTask = new Runnable() {
+		public void run() {
+			stopLocating();
+		}
+	};
 
 	@Override
 	public void onLocationChanged(Location location) {
