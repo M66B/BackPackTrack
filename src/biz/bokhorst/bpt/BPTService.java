@@ -207,6 +207,7 @@ public class BPTService extends IntentService implements LocationListener,
 
 			unregisterReceiver(alarmReceiver);
 			stopForeground(true);
+			alarmManager.cancel(pendingAlarmIntent);
 			taskHandler.post(StopTask);
 		}
 		return super.onUnbind(intent);
@@ -301,9 +302,6 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// Helper stop locating
 	protected synchronized void stopLocating() {
-		// Cancel alarm
-		alarmManager.cancel(pendingAlarmIntent);
-
 		if (locating) {
 			locating = false;
 			waypoint = false;
