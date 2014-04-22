@@ -37,6 +37,7 @@ import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -84,6 +85,8 @@ public class BPTService extends IntentService implements LocationListener,
 	private Messenger clientMessenger = null;
 	private final Messenger serverMessenger = new Messenger(
 			new IncomingHandler());
+	private PendingIntent intentBack = null;
+	private NotificationManager notificationManager = null;
 
 	// State
 	private boolean bound = false;
@@ -162,7 +165,7 @@ public class BPTService extends IntentService implements LocationListener,
 				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 		// Build pending intent
-		PendingIntent intentBack = PendingIntent.getActivity(this, 0, toLaunch,
+		intentBack = PendingIntent.getActivity(this, 0, toLaunch,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		// Build notification
@@ -188,6 +191,7 @@ public class BPTService extends IntentService implements LocationListener,
 		taskHandler = new Handler();
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
 				"BPT");
+		notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
 		Intent alarmIntent = new Intent("BPT_ALARM");
 		pendingAlarmIntent = PendingIntent.getBroadcast(this, 0, alarmIntent,
@@ -556,6 +560,20 @@ public class BPTService extends IntentService implements LocationListener,
 	// And a few helpers to simplify the above logic ;-)
 
 	private void sendStage(String stage) {
+		if (!getString(R.string.na).equals(stage)) {
+			// Build notification
+			NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(
+					this);
+			notificationBuilder.setSmallIcon(R.drawable.icon);
+			notificationBuilder.setContentTitle(getString(R.string.app_name));
+			notificationBuilder.setContentText(stage);
+			notificationBuilder.setContentIntent(intentBack);
+			notificationBuilder.setWhen(System.currentTimeMillis());
+			notificationBuilder.setAutoCancel(true);
+			Notification notification = notificationBuilder.build();
+			notificationManager.notify(1, notification);
+		}
+
 		Bundle b = new Bundle();
 		b.putString("Stage", stage);
 		sendMessage(BackPackTrack.MSG_STAGE, b);

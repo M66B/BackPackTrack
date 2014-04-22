@@ -3,7 +3,7 @@
 
     <string name="app_name">BackPackTrack</string>
     <string name="set_preferences">Preferences</string>
-    <string name="Running">BackPackTrack running</string>
+    <string name="Running">Running</string>
     <string name="Status">Status:</string>
     <string name="Stage">Stage:</string>
     <string name="Satellites">Satellites:</string>
