@@ -105,7 +105,7 @@ public class BackPackTrack extends Activity implements
 				else
 					txtSatellites.setText(String.format("%d/%d", fix, count));
 			} else if (msg.what == MSG_LOCATION) {
-				Location location = new Location(LocationManager.GPS_PROVIDER);
+				Location location = new Location(b.getString("Provider"));
 				location.setLatitude(b.getDouble("Latitude"));
 				location.setLongitude(b.getDouble("Longitude"));
 				location.setAltitude(b.getDouble("Altitude"));
@@ -130,6 +130,7 @@ public class BackPackTrack extends Activity implements
 	private TextView txtStage;
 	private TextView txtStatus;
 	private TextView txtSatellites;
+	private TextView txtProvider;
 	private TextView txtLatitude;
 	private TextView txtLongitude;
 	private TextView txtAltitude;
@@ -183,6 +184,7 @@ public class BackPackTrack extends Activity implements
 		txtStatus = (TextView) findViewById(R.id.txtStatus);
 		txtStage = (TextView) findViewById(R.id.txtStage);
 		txtSatellites = (TextView) findViewById(R.id.txtSatellites);
+		txtProvider = (TextView) findViewById(R.id.txtProvider);
 		txtLatitude = (TextView) findViewById(R.id.txtLatitude);
 		txtLongitude = (TextView) findViewById(R.id.txtLongitude);
 		txtAltitude = (TextView) findViewById(R.id.txtAltitude);
@@ -374,6 +376,7 @@ public class BackPackTrack extends Activity implements
 	// Helper show location
 	private void showLocation(Location location) {
 		if (location == null) {
+			txtProvider.setText(R.string.na);
 			txtLatitude.setText(R.string.na);
 			txtLongitude.setText(R.string.na);
 			txtAltitude.setText(R.string.na);
@@ -381,6 +384,7 @@ public class BackPackTrack extends Activity implements
 			txtAccuracy.setText(R.string.na);
 			txtTime.setText(R.string.na);
 		} else {
+			txtProvider.setText(location.getProvider());
 			txtLatitude.setText(String.format("%s", Location.convert(
 					location.getLatitude(), Location.FORMAT_SECONDS)));
 			txtLongitude.setText(String.format("%s", Location.convert(

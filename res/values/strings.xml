@@ -4,8 +4,9 @@
     <string name="app_name">BackPackTrack</string>
     <string name="set_preferences">Preferences</string>
     <string name="Running">Running</string>
-    <string name="Status">Status:</string>
     <string name="Stage">Stage:</string>
+    <string name="Status">Status:</string>
+    <string name="Provider">Provider:</string>
     <string name="Satellites">Satellites:</string>
     <string name="Latitude">Latitude:</string>
     <string name="Longitude">Longitude:</string>

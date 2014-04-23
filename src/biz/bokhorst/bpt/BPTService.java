@@ -290,6 +290,9 @@ public class BPTService extends IntentService implements LocationListener,
 			locationManager.requestLocationUpdates(
 					LocationManager.GPS_PROVIDER, 0, 0, this,
 					taskHandler.getLooper());
+			locationManager.requestLocationUpdates(
+					LocationManager.NETWORK_PROVIDER, 0, 0, this,
+					taskHandler.getLooper());
 			locationManager.addGpsStatusListener(this);
 
 			// User feedback
@@ -599,6 +602,7 @@ public class BPTService extends IntentService implements LocationListener,
 		b.putDouble("Altitude", location.getAltitude());
 		b.putFloat("Speed", location.getSpeed());
 		b.putFloat("Accuracy", location.getAccuracy());
+		b.putString("Provider", location.getProvider());
 		b.putLong("Time", location.getTime());
 		sendMessage(BackPackTrack.MSG_LOCATION, b);
 	}
