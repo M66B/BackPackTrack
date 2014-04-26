@@ -137,6 +137,7 @@ public class BPTService extends IntentService implements LocationListener,
 			waypoint = true;
 			taskHandler.post(StartTask);
 		} else if ("Update".equals(intent.getAction())) {
+			should = true;
 			taskHandler.post(StartTask);
 		} else if (ActivityRecognitionResult.hasResult(intent)) {
 			ActivityRecognitionResult result = ActivityRecognitionResult
