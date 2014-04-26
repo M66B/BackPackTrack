@@ -85,7 +85,6 @@ public class BPTService extends IntentService implements LocationListener,
 	private Messenger clientMessenger = null;
 	private final Messenger serverMessenger = new Messenger(
 			new IncomingHandler());
-	private PendingIntent intentBack = null;
 	private NotificationManager notificationManager = null;
 
 	// State
@@ -133,8 +132,13 @@ public class BPTService extends IntentService implements LocationListener,
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		// Check for activity recognition
-		if (ActivityRecognitionResult.hasResult(intent)) {
+		if ("Waypoint".equals(intent.getAction())) {
+			should = true;
+			waypoint = true;
+			taskHandler.post(StartTask);
+		} else if ("Update".equals(intent.getAction())) {
+			taskHandler.post(StartTask);
+		} else if (ActivityRecognitionResult.hasResult(intent)) {
 			ActivityRecognitionResult result = ActivityRecognitionResult
 					.extractResult(intent);
 			DetectedActivity mostProbableActivity = result
@@ -157,30 +161,8 @@ public class BPTService extends IntentService implements LocationListener,
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		// Build intent
-		Intent toLaunch = new Intent(this, BackPackTrack.class);
-		toLaunch.setAction("android.intent.action.MAIN");
-		toLaunch.addCategory("android.intent.category.LAUNCHER");
-		toLaunch.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-		// Build pending intent
-		intentBack = PendingIntent.getActivity(this, 0, toLaunch,
-				PendingIntent.FLAG_UPDATE_CURRENT);
-
-		// Build notification
-		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(
-				this);
-		notificationBuilder.setSmallIcon(R.drawable.icon);
-		notificationBuilder.setContentTitle(getString(R.string.app_name));
-		notificationBuilder.setContentText(getString(R.string.Running));
-		notificationBuilder.setContentIntent(intentBack);
-		notificationBuilder.setWhen(System.currentTimeMillis());
-		notificationBuilder.setAutoCancel(true);
-		Notification notification = notificationBuilder.build();
-
 		// Start foreground service
-		startForeground(1, notification);
+		startForeground(1, getNotification(getString(R.string.Running)));
 
 		// Instantiate helpers
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -311,7 +293,6 @@ public class BPTService extends IntentService implements LocationListener,
 	protected synchronized void stopLocating() {
 		if (locating) {
 			locating = false;
-			waypoint = false;
 			wakeLock.release();
 
 			// Disable location updates
@@ -397,16 +378,20 @@ public class BPTService extends IntentService implements LocationListener,
 				stopLocating();
 
 				// Always make track point
-				makeTrackpoint(bestLocation);
+				makeTrackpoint(bestLocation, waypoint);
 
 				// Make way point
-				if (waypoint)
+				if (waypoint) {
+					waypoint = false;
 					makeWaypoint(bestLocation);
+				}
 
 				// User feedback
-				sendStage(String.format(getString(R.string.StageTracked),
-						Math.round(bestLocation.getAccuracy()),
-						TIME_FORMATTER.format(nextTrackTime)));
+				sendStage(String.format(getString(R.string.StageTracked), Math
+						.round(bestLocation.getAccuracy()), TIME_FORMATTER
+						.format(nextTrackTime),
+						lastActivity == null ? getString(R.string.unknown)
+								: lastActivity));
 			}
 		}
 	};
@@ -444,7 +429,7 @@ public class BPTService extends IntentService implements LocationListener,
 	}
 
 	// Helper method create track point
-	protected void makeTrackpoint(Location location) {
+	protected void makeTrackpoint(Location location, boolean waypoint) {
 		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
 				Preferences.PREF_TRACKNAME_DEFAULT);
 
@@ -453,7 +438,8 @@ public class BPTService extends IntentService implements LocationListener,
 				Preferences.PREF_MINDISTANCE_DEFAULT));
 
 		Location lastLocation = databaseHelper.getYoungest(trackName, false);
-		if (lastLocation == null || distanceM(lastLocation, location) >= minDX) {
+		if (lastLocation == null || distanceM(lastLocation, location) >= minDX
+				|| waypoint) {
 			// Register track point
 			databaseHelper.insertPoint(trackName, null, location, null, false,
 					lastActivity);
@@ -564,22 +550,58 @@ public class BPTService extends IntentService implements LocationListener,
 
 	private void sendStage(String stage) {
 		if (!getString(R.string.na).equals(stage)) {
-			// Build notification
-			NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(
-					this);
-			notificationBuilder.setSmallIcon(R.drawable.icon);
-			notificationBuilder.setContentTitle(getString(R.string.app_name));
-			notificationBuilder.setContentText(stage);
-			notificationBuilder.setContentIntent(intentBack);
-			notificationBuilder.setWhen(System.currentTimeMillis());
-			notificationBuilder.setAutoCancel(true);
-			Notification notification = notificationBuilder.build();
+			Notification notification = getNotification(stage);
 			notificationManager.notify(1, notification);
 		}
 
 		Bundle b = new Bundle();
 		b.putString("Stage", stage);
 		sendMessage(BackPackTrack.MSG_STAGE, b);
+	}
+
+	private Notification getNotification(String text) {
+		// Build intent
+		Intent toLaunch = new Intent(this, BackPackTrack.class);
+		toLaunch.setAction("android.intent.action.MAIN");
+		toLaunch.addCategory("android.intent.category.LAUNCHER");
+		toLaunch.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+		// Build pending intent
+		PendingIntent intentBack = PendingIntent.getActivity(this, 0, toLaunch,
+				PendingIntent.FLAG_UPDATE_CURRENT);
+
+		// Build result intent update
+		Intent resultIntentUpdate = new Intent(this, BPTService.class);
+		resultIntentUpdate.setAction("Update");
+
+		// Build pending intent waypoint
+		PendingIntent pendingIntentUpdate = PendingIntent.getService(this, 2,
+				resultIntentUpdate, PendingIntent.FLAG_UPDATE_CURRENT);
+
+		// Build result intent waypoint
+		Intent resultIntentWaypoint = new Intent(this, BPTService.class);
+		resultIntentWaypoint.setAction("Waypoint");
+
+		// Build pending intent waypoint
+		PendingIntent pendingIntentWaypoint = PendingIntent.getService(this, 2,
+				resultIntentWaypoint, PendingIntent.FLAG_UPDATE_CURRENT);
+
+		// Build notification
+		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(
+				this);
+		notificationBuilder.setSmallIcon(R.drawable.icon);
+		notificationBuilder.setContentTitle(getString(R.string.app_name));
+		notificationBuilder.setContentText(text);
+		notificationBuilder.setContentIntent(intentBack);
+		notificationBuilder.setWhen(System.currentTimeMillis());
+		notificationBuilder.setAutoCancel(true);
+		notificationBuilder.addAction(android.R.drawable.ic_menu_mylocation,
+				getString(R.string.Update), pendingIntentUpdate);
+		notificationBuilder.addAction(android.R.drawable.ic_menu_add,
+				getString(R.string.Waypoint), pendingIntentWaypoint);
+		Notification notification = notificationBuilder.build();
+		return notification;
 	}
 
 	private void sendStatus(String status) {

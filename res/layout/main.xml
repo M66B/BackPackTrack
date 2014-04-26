@@ -309,7 +309,7 @@
                     android:id="@+id/btnStart"
                     android:layout_width="wrap_content"
                     android:layout_height="50dip"
-                    android:state_enabled="true"
+                    android:enabled="true"
                     android:text="@string/Start"
                     android:width="100dip" />
 
@@ -317,7 +317,7 @@
                     android:id="@+id/btnStop"
                     android:layout_width="wrap_content"
                     android:layout_height="50dip"
-                    android:state_enabled="false"
+                    android:enabled="false"
                     android:text="@string/Stop"
                     android:width="100dip" />
 
@@ -325,7 +325,7 @@
                     android:id="@+id/btnUpdate"
                     android:layout_width="wrap_content"
                     android:layout_height="50dip"
-                    android:state_enabled="false"
+                    android:enabled="false"
                     android:text="@string/Update"
                     android:width="100dip" />
             </TableRow>
@@ -338,7 +338,7 @@
                     android:id="@+id/btnWaypoint"
                     android:layout_width="wrap_content"
                     android:layout_height="50dip"
-                    android:state_enabled="true"
+                    android:enabled="true"
                     android:text="@string/Waypoint"
                     android:width="100dip" />
 
@@ -346,7 +346,7 @@
                     android:id="@+id/btnGeocode"
                     android:layout_width="wrap_content"
                     android:layout_height="50dip"
-                    android:state_enabled="true"
+                    android:enabled="true"
                     android:text="@string/Geocode"
                     android:width="100dip" />
 
