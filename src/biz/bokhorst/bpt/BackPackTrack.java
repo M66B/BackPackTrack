@@ -117,7 +117,7 @@ public class BackPackTrack extends Activity implements
 				updateTrack();
 			else if (msg.what == MSG_ACTIVITY)
 				showActivity(b.getString("Name"), b.getInt("Confidence"),
-						b.getLong("Time"), b.getBoolean("Should"));
+						b.getLong("Time"));
 		}
 	}
 
@@ -400,15 +400,13 @@ public class BackPackTrack extends Activity implements
 		}
 	}
 
-	private void showActivity(String name, int confidence, long time,
-			boolean should) {
+	private void showActivity(String name, int confidence, long time) {
 		if (confidence >= 0)
-			txtActivity.setText(String.format("%s %d %% %s %b", name,
-					confidence, DATETIME_FORMATTER.format(new Date(time)),
-					should));
+			txtActivity.setText(String.format("%s %d %% %s", name, confidence,
+					DATETIME_FORMATTER.format(new Date(time))));
 		else
-			txtActivity.setText(String.format("%s %s %b", name,
-					DATETIME_FORMATTER.format(new Date(time)), should));
+			txtActivity.setText(String.format("%s %s", name,
+					DATETIME_FORMATTER.format(new Date(time))));
 	}
 
 	// Helper make waypoint

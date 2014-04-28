@@ -89,6 +89,7 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// State
 	private boolean bound = false;
+	private boolean once = false;
 	private boolean waypoint = false;
 	private boolean locating = false;
 	private boolean locationwait = false;
@@ -133,11 +134,11 @@ public class BPTService extends IntentService implements LocationListener,
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		if ("Waypoint".equals(intent.getAction())) {
-			should = true;
+			once = true;
 			waypoint = true;
 			taskHandler.post(StartTask);
 		} else if ("Update".equals(intent.getAction())) {
-			should = true;
+			once = true;
 			taskHandler.post(StartTask);
 		} else if (ActivityRecognitionResult.hasResult(intent)) {
 			ActivityRecognitionResult result = ActivityRecognitionResult
@@ -216,7 +217,7 @@ public class BPTService extends IntentService implements LocationListener,
 			Log.w("BPT", "Message=" + msg.what);
 			if (msg.replyTo != null)
 				clientMessenger = msg.replyTo;
-			should = true;
+			once = true;
 			waypoint = (msg.what == MSG_WAYPOINT);
 			taskHandler.post(StartTask);
 		}
@@ -258,7 +259,7 @@ public class BPTService extends IntentService implements LocationListener,
 			sendStage(String.format(getString(R.string.StageStill),
 					TIME_FORMATTER.format(nextTrackTime)));
 
-		if (!locating && (recognition ? should : true)) {
+		if (!locating && (recognition ? should || once : true)) {
 			locating = true;
 			locationwait = false;
 			wakeLock.acquire();
@@ -386,6 +387,8 @@ public class BPTService extends IntentService implements LocationListener,
 					waypoint = false;
 					makeWaypoint(bestLocation);
 				}
+
+				once = false;
 
 				// User feedback
 				sendStage(String.format(getString(R.string.StageTracked), Math
@@ -635,7 +638,6 @@ public class BPTService extends IntentService implements LocationListener,
 		b.putString("Name", name);
 		b.putInt("Confidence", confidence);
 		b.putLong("Time", time);
-		b.putBoolean("Should", should);
 		sendMessage(BackPackTrack.MSG_ACTIVITY, b);
 	}
 
