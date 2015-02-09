@@ -1,7 +1,7 @@
 package biz.bokhorst.bpt;
 
 /*
- Copyright 2011-2014 Marcel Bokhorst
+ Copyright 2011-2015 Marcel Bokhorst
  All Rights Reserved
 
  This program is free software; you can redistribute it and/or modify
@@ -63,14 +63,13 @@ import android.util.Log;
 import android.widget.Toast;
 import android.os.PowerManager;
 
-public class BPTService extends IntentService implements LocationListener,
-		GpsStatus.Listener, ConnectionCallbacks, OnConnectionFailedListener {
+public class BPTService extends IntentService implements LocationListener, GpsStatus.Listener, ConnectionCallbacks,
+		OnConnectionFailedListener {
 	// Messages
 	public static final int MSG_REPLY = 1;
 	public static final int MSG_WAYPOINT = 2;
 
-	private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat(
-			"HH:mm:ss", Locale.getDefault());
+	private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
 	// Helpers
 	private LocationManager locationManager = null;
@@ -83,8 +82,7 @@ public class BPTService extends IntentService implements LocationListener,
 	private AlarmManager alarmManager = null;
 	private BPTAlarmReceiver alarmReceiver = null;
 	private Messenger clientMessenger = null;
-	private final Messenger serverMessenger = new Messenger(
-			new IncomingHandler());
+	private final Messenger serverMessenger = new Messenger(new IncomingHandler());
 	private NotificationManager notificationManager = null;
 
 	// State
@@ -115,14 +113,11 @@ public class BPTService extends IntentService implements LocationListener,
 		should = true;
 		sendActivity(getString(R.string.connected), -1, new Date().getTime());
 
-		long interval = Integer.parseInt(preferences.getString(
-				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL,
+		long interval = Integer.parseInt(preferences.getString(Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL,
 				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT)) * 60L * 1000L;
-		PendingIntent activityCallbackIntent = PendingIntent.getService(this,
-				0, new Intent(this, BPTService.class),
+		PendingIntent activityCallbackIntent = PendingIntent.getService(this, 0, new Intent(this, BPTService.class),
 				PendingIntent.FLAG_UPDATE_CURRENT);
-		activityRecognitionClient.requestActivityUpdates(interval,
-				activityCallbackIntent);
+		activityRecognitionClient.requestActivityUpdates(interval, activityCallbackIntent);
 	}
 
 	@Override
@@ -141,10 +136,8 @@ public class BPTService extends IntentService implements LocationListener,
 			once = true;
 			taskHandler.post(StartTask);
 		} else if (ActivityRecognitionResult.hasResult(intent)) {
-			ActivityRecognitionResult result = ActivityRecognitionResult
-					.extractResult(intent);
-			DetectedActivity mostProbableActivity = result
-					.getMostProbableActivity();
+			ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
+			DetectedActivity mostProbableActivity = result.getMostProbableActivity();
 			int confidence = mostProbableActivity.getConfidence();
 			int activityType = mostProbableActivity.getType();
 
@@ -154,9 +147,8 @@ public class BPTService extends IntentService implements LocationListener,
 			sendActivity(activityName, confidence, result.getTime());
 
 			for (DetectedActivity activity : result.getProbableActivities())
-				Log.w("BPT", TIME_FORMATTER.format(new Date(result.getTime()))
-						+ " Activity " + getNameFromType(activity.getType())
-						+ " " + activity.getConfidence() + " %");
+				Log.w("BPT", TIME_FORMATTER.format(new Date(result.getTime())) + " Activity "
+						+ getNameFromType(activity.getType()) + " " + activity.getConfidence() + " %");
 		} else
 			sendActivity(intent.getAction(), -1, new Date().getTime());
 	}
@@ -173,13 +165,11 @@ public class BPTService extends IntentService implements LocationListener,
 		PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 		taskHandler = new Handler();
-		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-				"BPT");
+		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BPT");
 		notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
 		Intent alarmIntent = new Intent("BPT_ALARM");
-		pendingAlarmIntent = PendingIntent.getBroadcast(this, 0, alarmIntent,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+		pendingAlarmIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 		alarmReceiver = new BPTAlarmReceiver();
 		registerReceiver(alarmReceiver, new IntentFilter("BPT_ALARM"));
@@ -227,37 +217,30 @@ public class BPTService extends IntentService implements LocationListener,
 	protected synchronized void startLocating() {
 		// Start activity recognition
 		if (activityRecognitionClient == null)
-			activityRecognitionClient = new ActivityRecognitionClient(this,
-					this, this);
+			activityRecognitionClient = new ActivityRecognitionClient(this, this, this);
 
 		// Connect activity recognition
-		if (!activityRecognitionClient.isConnected()
-				&& !activityRecognitionClient.isConnecting()) {
-			sendActivity(getString(R.string.connecting), -1,
-					new Date().getTime());
+		if (!activityRecognitionClient.isConnected() && !activityRecognitionClient.isConnecting()) {
+			sendActivity(getString(R.string.connecting), -1, new Date().getTime());
 			activityRecognitionClient.connect();
 		}
 
 		// Schedule next alarm
-		long interval = Integer.parseInt(preferences.getString(
-				Preferences.PREF_TRACKINTERVAL,
+		long interval = Integer.parseInt(preferences.getString(Preferences.PREF_TRACKINTERVAL,
 				Preferences.PREF_TRACKINTERVAL_DEFAULT)) * 60L * 1000L;
 		long alarmTime = SystemClock.elapsedRealtime() + interval;
 		alarmManager.cancel(pendingAlarmIntent);
-		alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, alarmTime,
-				pendingAlarmIntent);
+		alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, alarmTime, pendingAlarmIntent);
 
 		// Prepare user feedback
 		nextTrackTime = new Date(System.currentTimeMillis() + interval);
 
 		// Use activity recognition?
-		boolean recognition = preferences.getBoolean(
-				Preferences.PREF_ACTIVITYRECOGNITION,
+		boolean recognition = preferences.getBoolean(Preferences.PREF_ACTIVITYRECOGNITION,
 				Preferences.PREF_ACTIVITYRECOGNITION_DEFAULT);
 
 		if (recognition && !should)
-			sendStage(String.format(getString(R.string.StageStill),
-					TIME_FORMATTER.format(nextTrackTime)));
+			sendStage(String.format(getString(R.string.StageStill), TIME_FORMATTER.format(nextTrackTime)));
 
 		if (!locating && (recognition ? should || once : true)) {
 			locating = true;
@@ -265,28 +248,21 @@ public class BPTService extends IntentService implements LocationListener,
 			wakeLock.acquire();
 
 			// Start waiting for fix
-			long timeout = Integer.parseInt(preferences.getString(
-					Preferences.PREF_FIXTIMEOUT,
+			long timeout = Integer.parseInt(preferences.getString(Preferences.PREF_FIXTIMEOUT,
 					Preferences.PREF_FIXTIMEOUT_DEFAULT)) * 1000L;
 			taskHandler.postDelayed(FixTimeoutTask, timeout);
 
 			// Request location updates
-			locationManager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, 0, 0, this,
-					taskHandler.getLooper());
-			locationManager.requestLocationUpdates(
-					LocationManager.NETWORK_PROVIDER, 0, 0, this,
+			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this, taskHandler.getLooper());
+			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this,
 					taskHandler.getLooper());
 			locationManager.addGpsStatusListener(this);
 
 			// User feedback
 			Date timeoutTime = new Date(System.currentTimeMillis() + timeout);
-			boolean gpsEnabled = locationManager
-					.isProviderEnabled(LocationManager.GPS_PROVIDER);
-			sendStage(String.format(getString(R.string.StageFixWait),
-					TIME_FORMATTER.format(timeoutTime)));
-			sendStatus(gpsEnabled ? getString(R.string.On)
-					: getString(R.string.Off));
+			boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+			sendStage(String.format(getString(R.string.StageFixWait), TIME_FORMATTER.format(timeoutTime)));
+			sendStatus(gpsEnabled ? getString(R.string.On) : getString(R.string.Off));
 			sendSatellites(-1, -1);
 		}
 	}
@@ -331,8 +307,7 @@ public class BPTService extends IntentService implements LocationListener,
 			taskHandler.removeCallbacks(FixTimeoutTask);
 
 			// Get minimum accuracy
-			int minAccuracy = Integer.parseInt(preferences.getString(
-					Preferences.PREF_MINACCURACY,
+			int minAccuracy = Integer.parseInt(preferences.getString(Preferences.PREF_MINACCURACY,
 					Preferences.PREF_MINACCURACY_DEFAULT));
 
 			if (locationwait) {
@@ -354,8 +329,7 @@ public class BPTService extends IntentService implements LocationListener,
 				locationwait = true;
 
 				// Get maximum wait time
-				long wait = Integer.parseInt(preferences.getString(
-						Preferences.PREF_MAXWAIT,
+				long wait = Integer.parseInt(preferences.getString(Preferences.PREF_MAXWAIT,
 						Preferences.PREF_MAXWAIT_DEFAULT)) * 1000L;
 
 				// Wait for better location for some time
@@ -363,8 +337,8 @@ public class BPTService extends IntentService implements LocationListener,
 				Date waitTime = new Date(System.currentTimeMillis() + wait);
 
 				// User feedback
-				sendStage(String.format(getString(R.string.StageTrackWait),
-						TIME_FORMATTER.format(waitTime), minAccuracy));
+				sendStage(String.format(getString(R.string.StageTrackWait), TIME_FORMATTER.format(waitTime),
+						minAccuracy));
 			}
 
 			// User feedback
@@ -391,10 +365,8 @@ public class BPTService extends IntentService implements LocationListener,
 				once = false;
 
 				// User feedback
-				sendStage(String.format(getString(R.string.StageTracked), Math
-						.round(bestLocation.getAccuracy()), TIME_FORMATTER
-						.format(nextTrackTime),
-						lastActivity == null ? getString(R.string.unknown)
+				sendStage(String.format(getString(R.string.StageTracked), Math.round(bestLocation.getAccuracy()),
+						TIME_FORMATTER.format(nextTrackTime), lastActivity == null ? getString(R.string.unknown)
 								: lastActivity));
 			}
 		}
@@ -408,8 +380,7 @@ public class BPTService extends IntentService implements LocationListener,
 				stopLocating();
 
 				// User feedback
-				sendStage(String.format(getString(R.string.StageFixTimeout),
-						TIME_FORMATTER.format(nextTrackTime)));
+				sendStage(String.format(getString(R.string.StageFixTimeout), TIME_FORMATTER.format(nextTrackTime)));
 			}
 		}
 	};
@@ -434,35 +405,28 @@ public class BPTService extends IntentService implements LocationListener,
 
 	// Helper method create track point
 	protected void makeTrackpoint(Location location, boolean waypoint) {
-		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
-				Preferences.PREF_TRACKNAME_DEFAULT);
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 
-		long minDX = Integer.parseInt(preferences.getString(
-				Preferences.PREF_MINDISTANCE,
+		long minDX = Integer.parseInt(preferences.getString(Preferences.PREF_MINDISTANCE,
 				Preferences.PREF_MINDISTANCE_DEFAULT));
 
 		Location lastLocation = databaseHelper.getYoungest(trackName, false);
-		if (lastLocation == null || distanceM(lastLocation, location) >= minDX
-				|| waypoint) {
+		if (lastLocation == null || distanceM(lastLocation, location) >= minDX || waypoint) {
 			// Register track point
-			databaseHelper.insertPoint(trackName, null, location, null, false,
-					lastActivity);
+			databaseHelper.insertPoint(trackName, null, location, null, false, lastActivity);
 
 			// User feedback
 			sendMessage(BackPackTrack.MSG_UPDATETRACK, null);
-			Toast.makeText(this, getString(R.string.TrackpointAdded),
-					Toast.LENGTH_LONG).show();
+			Toast.makeText(this, getString(R.string.TrackpointAdded), Toast.LENGTH_LONG).show();
 		}
 	}
 
 	// Helper create way point
 	private void makeWaypoint(Location location) {
-		String trackName = preferences.getString(Preferences.PREF_TRACKNAME,
-				Preferences.PREF_TRACKNAME_DEFAULT);
+		String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 		int count = databaseHelper.countPoints(trackName, true);
 		String name = String.format(Locale.getDefault(), "%03d", count + 1);
-		databaseHelper.insertPoint(trackName, null, location, name, true,
-				lastActivity);
+		databaseHelper.insertPoint(trackName, null, location, name, true, lastActivity);
 
 		// User feedback
 		sendMessage(BackPackTrack.MSG_UPDATETRACK, null);
@@ -471,21 +435,17 @@ public class BPTService extends IntentService implements LocationListener,
 		vibrator.vibrate(500);
 	}
 
-	public double distanceM(double userLat, double userLng, double venueLat,
-			double venueLng) {
+	public double distanceM(double userLat, double userLng, double venueLat, double venueLng) {
 		double latDistance = Math.toRadians(userLat - venueLat);
 		double lngDistance = Math.toRadians(userLng - venueLng);
-		double a = (Math.sin(latDistance / 2) * Math.sin(latDistance / 2))
-				+ (Math.cos(Math.toRadians(userLat)))
-				* (Math.cos(Math.toRadians(venueLat)))
-				* (Math.sin(lngDistance / 2)) * (Math.sin(lngDistance / 2));
+		double a = (Math.sin(latDistance / 2) * Math.sin(latDistance / 2)) + (Math.cos(Math.toRadians(userLat)))
+				* (Math.cos(Math.toRadians(venueLat))) * (Math.sin(lngDistance / 2)) * (Math.sin(lngDistance / 2));
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 		return 6371 * 1000 * c;
 	}
 
 	public double distanceM(Location a, Location b) {
-		return distanceM(a.getLatitude(), a.getLongitude(), b.getLatitude(),
-				b.getLongitude());
+		return distanceM(a.getLatitude(), a.getLongitude(), b.getLatitude(), b.getLongitude());
 	}
 
 	// GPS disabled
@@ -568,42 +528,39 @@ public class BPTService extends IntentService implements LocationListener,
 		Intent toLaunch = new Intent(this, BackPackTrack.class);
 		toLaunch.setAction("android.intent.action.MAIN");
 		toLaunch.addCategory("android.intent.category.LAUNCHER");
-		toLaunch.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		toLaunch.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 		// Build pending intent
-		PendingIntent intentBack = PendingIntent.getActivity(this, 0, toLaunch,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent intentBack = PendingIntent.getActivity(this, 0, toLaunch, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		// Build result intent update
 		Intent resultIntentUpdate = new Intent(this, BPTService.class);
 		resultIntentUpdate.setAction("Update");
 
 		// Build pending intent waypoint
-		PendingIntent pendingIntentUpdate = PendingIntent.getService(this, 2,
-				resultIntentUpdate, PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent pendingIntentUpdate = PendingIntent.getService(this, 2, resultIntentUpdate,
+				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		// Build result intent waypoint
 		Intent resultIntentWaypoint = new Intent(this, BPTService.class);
 		resultIntentWaypoint.setAction("Waypoint");
 
 		// Build pending intent waypoint
-		PendingIntent pendingIntentWaypoint = PendingIntent.getService(this, 2,
-				resultIntentWaypoint, PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent pendingIntentWaypoint = PendingIntent.getService(this, 2, resultIntentWaypoint,
+				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		// Build notification
-		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(
-				this);
+		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
 		notificationBuilder.setSmallIcon(R.drawable.icon);
 		notificationBuilder.setContentTitle(getString(R.string.app_name));
 		notificationBuilder.setContentText(text);
 		notificationBuilder.setContentIntent(intentBack);
 		notificationBuilder.setWhen(System.currentTimeMillis());
 		notificationBuilder.setAutoCancel(true);
-		notificationBuilder.addAction(android.R.drawable.ic_menu_mylocation,
-				getString(R.string.Update), pendingIntentUpdate);
-		notificationBuilder.addAction(android.R.drawable.ic_menu_add,
-				getString(R.string.Waypoint), pendingIntentWaypoint);
+		notificationBuilder.addAction(android.R.drawable.ic_menu_mylocation, getString(R.string.Update),
+				pendingIntentUpdate);
+		notificationBuilder.addAction(android.R.drawable.ic_menu_add, getString(R.string.Waypoint),
+				pendingIntentWaypoint);
 		Notification notification = notificationBuilder.build();
 		return notification;
 	}
@@ -651,8 +608,7 @@ public class BPTService extends IntentService implements LocationListener,
 						msg.setData(data);
 					clientMessenger.send(msg);
 				} catch (Exception ex) {
-					Toast.makeText(this, ex.toString(), Toast.LENGTH_LONG)
-							.show();
+					Toast.makeText(this, ex.toString(), Toast.LENGTH_LONG).show();
 				}
 			}
 		} catch (Throwable ex) {

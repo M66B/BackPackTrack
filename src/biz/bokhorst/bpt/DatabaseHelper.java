@@ -1,7 +1,7 @@
 package biz.bokhorst.bpt;
 
 /*
- Copyright 2011-2014 Marcel Bokhorst
+ Copyright 2011-2015 Marcel Bokhorst
  All Rights Reserved
 
  This program is free software; you can redistribute it and/or modify
@@ -35,13 +35,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final int DBVERSION = 5;
 	private Context _context;
 
-	private static final String DBCREATE = "CREATE TABLE LOCATION ("
-			+ " ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-			+ " TRACK TEXT NOT NULL," + " SEGMENT TEXT,"
-			+ " LATITUDE REAL NOT NULL," + " LONGITUDE REAL NOT NULL,"
-			+ " ALTITUDE REAL NOT NULL," + " SPEED REAL NOT NULL,"
-			+ " ACCURACY REAL NOT NULL," + " TIME INTEGER NOT NULL,"
-			+ " NAME TEXT, " + " WPT NOT NULL, " + " ACTIVITY TEXT" + ");";
+	private static final String DBCREATE = "CREATE TABLE LOCATION (" + " ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+			+ " TRACK TEXT NOT NULL," + " SEGMENT TEXT," + " LATITUDE REAL NOT NULL," + " LONGITUDE REAL NOT NULL,"
+			+ " ALTITUDE REAL NOT NULL," + " SPEED REAL NOT NULL," + " ACCURACY REAL NOT NULL,"
+			+ " TIME INTEGER NOT NULL," + " NAME TEXT, " + " WPT NOT NULL, " + " ACTIVITY TEXT" + ");";
 
 	public DatabaseHelper(Context context) {
 		super(context, DBNAME, null, DBVERSION);
@@ -58,14 +55,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (oldVersion == 4) {
 			db.execSQL("DROP TABLE LOCATION");
 			db.execSQL(DBCREATE);
-			Toast.makeText(_context, "Database updated", Toast.LENGTH_LONG)
-					.show();
+			Toast.makeText(_context, "Database updated", Toast.LENGTH_LONG).show();
 		}
 	}
 
 	// Insert new trackpoint or waypoint
-	public void insertPoint(String trackName, String segment,
-			Location location, String name, boolean wpt, String activity) {
+	public void insertPoint(String trackName, String segment, Location location, String name, boolean wpt,
+			String activity) {
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues cv = new ContentValues();
 		cv.put("TRACK", trackName);
@@ -85,9 +81,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	// Get point by id
 	public Location getLocation(long id) {
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.rawQuery(
-				"SELECT LATITUDE, LONGITUDE, ALTITUDE, SPEED, ACCURACY, TIME FROM LOCATION"
-						+ " WHERE ID=" + Long.toString(id), new String[] {});
+		Cursor cursor = db.rawQuery("SELECT LATITUDE, LONGITUDE, ALTITUDE, SPEED, ACCURACY, TIME FROM LOCATION"
+				+ " WHERE ID=" + Long.toString(id), new String[] {});
 		if (cursor.moveToFirst()) {
 			Location location = new Location(LocationManager.GPS_PROVIDER);
 			location.setLatitude(cursor.getDouble(0));
@@ -104,20 +99,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	// Get list of points
 	public Cursor getPointList(String trackName, boolean wpt, boolean desc) {
 		SQLiteDatabase db = this.getReadableDatabase();
-		return db
-				.rawQuery(
-						"SELECT ID, TRACK, SEGMENT, LATITUDE, LONGITUDE, ALTITUDE, SPEED, ACCURACY, TIME, NAME, ACTIVITY FROM LOCATION"
-								+ " WHERE TRACK=? AND WPT="
-								+ (wpt ? "1" : "0")
-								+ " ORDER BY TIME" + (desc ? " DESC" : ""),
-						new String[] { trackName });
+		return db.rawQuery(
+				"SELECT ID, TRACK, SEGMENT, LATITUDE, LONGITUDE, ALTITUDE, SPEED, ACCURACY, TIME, NAME, ACTIVITY FROM LOCATION"
+						+ " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0") + " ORDER BY TIME" + (desc ? " DESC" : ""),
+				new String[] { trackName });
 	}
 
 	// Get youngest point
 	public Location getYoungest(String trackName, boolean wpt) {
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.rawQuery("SELECT ID FROM LOCATION"
-				+ " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0")
+		Cursor cursor = db.rawQuery("SELECT ID FROM LOCATION" + " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0")
 				+ " ORDER BY TIME DESC", new String[] { trackName });
 		if (cursor.moveToFirst())
 			return getLocation(cursor.getLong(0));
@@ -127,16 +118,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	// Get list of tracks
 	public Cursor getTrackList() {
 		SQLiteDatabase db = this.getReadableDatabase();
-		return db.rawQuery(
-				"SELECT DISTINCT TRACK FROM LOCATION ORDER BY TRACK",
-				new String[] {});
+		return db.rawQuery("SELECT DISTINCT TRACK FROM LOCATION ORDER BY TRACK", new String[] {});
 	}
 
 	// Get count of points
 	public int countPoints(String trackName, boolean wpt) {
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM LOCATION"
-				+ " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0"),
+		Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM LOCATION" + " WHERE TRACK=? AND WPT=" + (wpt ? "1" : "0"),
 				new String[] { trackName });
 		if (cursor.moveToFirst())
 			return cursor.getInt(0);
