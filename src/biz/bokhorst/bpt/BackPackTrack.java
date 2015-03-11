@@ -628,9 +628,10 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		// Write GPX file
 		File folder = null;
 		String gpxFileName = null;
-		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()))
-			folder = Environment.getExternalStorageDirectory();
-		else
+		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+			folder = new File(Environment.getExternalStorageDirectory() + "/osmand/tracks");
+			folder.mkdirs();
+		} else
 			folder = context.getFilesDir();
 		gpxFileName = folder + "/" + trackName + ".gpx";
 		Cursor cWpt = databaseHelper.getPointList(trackName, true, false);
