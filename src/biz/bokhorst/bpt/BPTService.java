@@ -26,10 +26,8 @@ import java.util.Locale;
 
 import biz.bokhorst.bpt.R;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
-import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
-import com.google.android.gms.location.ActivityRecognitionClient;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 
@@ -63,8 +61,8 @@ import android.util.Log;
 import android.widget.Toast;
 import android.os.PowerManager;
 
-public class BPTService extends IntentService implements LocationListener, GpsStatus.Listener, ConnectionCallbacks,
-		OnConnectionFailedListener {
+public class BPTService extends IntentService implements LocationListener, GpsStatus.Listener,
+		GoogleApiClient.ConnectionCallbacks {
 	// Messages
 	public static final int MSG_REPLY = 1;
 	public static final int MSG_WAYPOINT = 2;
@@ -96,16 +94,10 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 
 	private static boolean should = false;
 	private static String lastActivity = null;
-	private static ActivityRecognitionClient activityRecognitionClient = null;
+	private static GoogleApiClient activityRecognitionClient = null;
 
 	public BPTService() {
 		super("BPTService");
-	}
-
-	@Override
-	public void onConnectionFailed(ConnectionResult arg0) {
-		should = true;
-		sendActivity(getString(R.string.failed), -1, new Date().getTime());
 	}
 
 	@Override
@@ -117,13 +109,14 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 				Preferences.PREF_ACTIVITYRECOGNITIONINTERVAL_DEFAULT)) * 60L * 1000L;
 		PendingIntent activityCallbackIntent = PendingIntent.getService(this, 0, new Intent(this, BPTService.class),
 				PendingIntent.FLAG_UPDATE_CURRENT);
-		activityRecognitionClient.requestActivityUpdates(interval, activityCallbackIntent);
+		ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(activityRecognitionClient, interval,
+				activityCallbackIntent);
 	}
 
 	@Override
-	public void onDisconnected() {
+	public void onConnectionSuspended(int arg0) {
 		should = true;
-		sendActivity(getString(R.string.disconnected), -1, new Date().getTime());
+		sendActivity(getString(R.string.suspended), -1, new Date().getTime());
 	}
 
 	@Override
@@ -217,7 +210,8 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 	protected synchronized void startLocating() {
 		// Start activity recognition
 		if (activityRecognitionClient == null)
-			activityRecognitionClient = new ActivityRecognitionClient(this, this, this);
+			activityRecognitionClient = new GoogleApiClient.Builder(this).addApi(ActivityRecognition.API)
+					.addConnectionCallbacks(BPTService.this).build();
 
 		// Connect activity recognition
 		if (!activityRecognitionClient.isConnected() && !activityRecognitionClient.isConnecting()) {
@@ -387,20 +381,24 @@ public class BPTService extends IntentService implements LocationListener, GpsSt
 
 	private String getNameFromType(int activityType) {
 		switch (activityType) {
-		case DetectedActivity.IN_VEHICLE:
-			return getString(R.string.in_vehicle);
-		case DetectedActivity.ON_BICYCLE:
-			return getString(R.string.on_bicycle);
-		case DetectedActivity.ON_FOOT:
-			return getString(R.string.on_foot);
 		case DetectedActivity.STILL:
 			return getString(R.string.still);
-		case DetectedActivity.UNKNOWN:
-			return getString(R.string.unknown);
 		case DetectedActivity.TILTING:
 			return getString(R.string.tilting);
+		case DetectedActivity.ON_FOOT:
+			return getString(R.string.on_foot);
+		case DetectedActivity.WALKING:
+			return getString(R.string.walking);
+		case DetectedActivity.RUNNING:
+			return getString(R.string.running);
+		case DetectedActivity.ON_BICYCLE:
+			return getString(R.string.on_bicycle);
+		case DetectedActivity.IN_VEHICLE:
+			return getString(R.string.in_vehicle);
+		case DetectedActivity.UNKNOWN:
+			return getString(R.string.unknown);
 		}
-		return getString(R.string.unknown);
+		return getString(R.string.undefined);
 	}
 
 	// Helper method create track point

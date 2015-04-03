@@ -58,15 +58,17 @@
     <string name="StageFixTimeout">Fix timeout, next %s</string>
     <string name="StageStill">Still, next %s</string>
     <string name="StageTracked" formatted="false">Tracked %d m, next %s (%s)</string>
-    <string name="in_vehicle">In vehicle</string>
-    <string name="on_bicycle">On bicycle</string>
-    <string name="on_foot">On foot</string>
     <string name="still">Still</string>
-    <string name="unknown">Unknown</string>
     <string name="tilting">Tilting</string>
+    <string name="on_foot">On foot</string>
+    <string name="walking">Walking</string>
+    <string name="running">Running</string>
+    <string name="on_bicycle">On bicycle</string>
+    <string name="in_vehicle">In vehicle</string>
+    <string name="unknown">Unknown</string>
+    <string name="undefined">Undefined</string>
     <string name="connecting">Connecting</string>
     <string name="connected">Connected</string>
-    <string name="disconnected">Disconnected</string>
-    <string name="failed">Failed</string>
+    <string name="suspended">Suspended</string>
 
 </resources>
