@@ -34,6 +34,7 @@ import java.util.Map;
 
 import android.net.NetworkInfo;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -617,8 +618,12 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		try {
 			String trackName = preferences.getString(Preferences.PREF_TRACKNAME, Preferences.PREF_TRACKNAME_DEFAULT);
 			String gpxFileName = writeGPXFile(context, trackName);
-			Toast.makeText(BackPackTrack.this, String.format(getString(R.string.written), gpxFileName),
-					Toast.LENGTH_LONG).show();
+
+			// View file
+			Intent intent = new Intent();
+			intent.setAction(Intent.ACTION_VIEW);
+			intent.setDataAndType(Uri.fromFile(new File(gpxFileName)), "application/gpx+xml");
+			startActivity(intent);
 		} catch (Exception ex) {
 			Toast.makeText(BackPackTrack.this, ex.toString(), Toast.LENGTH_LONG).show();
 		}
@@ -629,7 +634,7 @@ public class BackPackTrack extends Activity implements SharedPreferences.OnShare
 		File folder = null;
 		String gpxFileName = null;
 		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-			folder = new File(Environment.getExternalStorageDirectory() + "/osmand/tracks");
+			folder = new File(Environment.getExternalStorageDirectory() + "/backpacktrack");
 			folder.mkdirs();
 		} else
 			folder = context.getFilesDir();
